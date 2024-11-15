@@ -6,19 +6,21 @@ from matplotlib import font_manager
 import urllib.request
 import os
 
-# URL ของฟอนต์ที่อัพโหลดไปยัง GitHub
-font_url = "https://github.com/watt29/Streamlit/raw/main/Tahoma%20Regular%20font.ttf"
+# URL ของฟอนต์ที่อัพโหลดไปยัง GitHub (raw link)
+font_url = "https://github.com/watt29/Streamlit/raw/main/fonts/Tahoma-Regular.ttf"
+
+# กำหนดเส้นทางที่จะบันทึกไฟล์ฟอนต์
+font_path = "Tahoma-Regular.ttf"
 
 # โหลดฟอนต์จาก URL
-font_path = "Tahoma Regular font.ttf"
-urllib.request.urlretrieve(font_url, font_path)
-
-# ตั้งค่าฟอนต์สำหรับ matplotlib
-font_prop = font_manager.FontProperties(fname=font_path)
-plt.rcParams['font.family'] = font_prop.get_name()  # ตั้งค่าให้ matplotlib ใช้ฟอนต์นี้เป็นฟอนต์หลัก
-
-# ตรวจสอบว่าฟอนต์ใช้งานได้
-print("Font used:", plt.rcParams['font.family'])
+try:
+    urllib.request.urlretrieve(font_url, font_path)
+    font_prop = font_manager.FontProperties(fname=font_path)
+    plt.rcParams['font.family'] = font_prop.get_name()  # ตั้งค่าให้ matplotlib ใช้ฟอนต์นี้
+    print("Font used:", plt.rcParams['font.family'])
+except Exception as e:
+    st.warning(f"ไม่สามารถดาวน์โหลดฟอนต์ได้: {e}")
+    plt.rcParams['font.family'] = 'Arial'  # ใช้ฟอนต์เริ่มต้นถ้าโหลดฟอนต์ไม่ได้
 
 # ชื่อไฟล์ CSV สำหรับบันทึกข้อมูล
 csv_file = 'budget_data.csv'
@@ -127,33 +129,6 @@ def style_dataframe(df):
     )
 
     return df_styled
-
-# Custom CSS to change the background color to white and adjust text colors
-st.markdown("""
-    <style>
-        body {
-            background-color: white;
-            color: black;
-        }
-        .block-container {
-            background-color: white;
-        }
-        .css-1v3fvcr {
-            background-color: white;
-        }
-        h1, h2, h3, h4, h5, h6 {
-            color: black;
-        }
-        .css-18e3th9 {
-            color: black;
-        }
-        .stButton>button {
-            color: black;
-            background-color: #0072B2;
-            border-radius: 5px;
-        }
-    </style>
-""", unsafe_allow_html=True)
 
 # เมนูต่าง ๆ
 page = st.sidebar.radio("เลือกหน้า", ("บันทึกข้อมูล", "ดูกราฟ"))

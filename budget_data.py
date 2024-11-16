@@ -1,19 +1,33 @@
-import numpy as np
+import urllib.request
 import pandas as pd
-import streamlit as st
 import matplotlib.pyplot as plt
 from matplotlib import font_manager
+import streamlit as st
 import os
 
-# ตั้งค่าฟอนต์ Kanit สำหรับ matplotlib
-font_path = r'C:\Users\Lenovo\Desktop\Kanit\Kanit-Regular.ttf'
+# URL ของฟอนต์ที่อัพโหลดไปยัง GitHub (raw link)
+font_url = "https://raw.githubusercontent.com/watt29/Streamlit/main/Kanit-Regular.ttf"
 
-# ตรวจสอบว่าฟอนต์ Kanit มีอยู่ในเครื่องหรือไม่
-if os.path.exists(font_path):
-    font_prop = font_manager.FontProperties(fname=font_path)
-else:
-    st.warning("ฟอนต์ Kanit ไม่พบในเครื่อง จะใช้ฟอนต์เริ่มต้นแทน")
-    font_prop = font_manager.FontProperties()  # ใช้ฟอนต์เริ่มต้น
+# กำหนดเส้นทางที่จะบันทึกไฟล์ฟอนต์
+font_path = "Kanit-Regular.ttf"
+
+# โหลดฟอนต์จาก URL
+try:
+    # ดาวน์โหลดฟอนต์จาก URL
+    urllib.request.urlretrieve(font_url, font_path)
+    
+    # ตรวจสอบว่าไฟล์ฟอนต์ถูกดาวน์โหลดสำเร็จ
+    if os.path.exists(font_path):
+        font_prop = font_manager.FontProperties(fname=font_path)
+        plt.rcParams['font.family'] = font_prop.get_name()  # ตั้งค่าให้ matplotlib ใช้ฟอนต์นี้
+        st.success(f"ฟอนต์ Kanit ถูกโหลดสำเร็จและตั้งค่าเรียบร้อยแล้ว")
+    else:
+        raise Exception("ฟอนต์ไม่สามารถดาวน์โหลดได้")
+
+except Exception as e:
+    st.warning(f"ไม่สามารถดาวน์โหลดฟอนต์ได้: {e}")
+    plt.rcParams['font.family'] = 'Arial'  # ใช้ฟอนต์เริ่มต้นถ้าโหลดฟอนต์ไม่ได้
+    st.warning("ฟอนต์ Kanit ไม่สามารถโหลดได้ ใช้ฟอนต์เริ่มต้นแทน")
 
 # ชื่อไฟล์ CSV สำหรับบันทึกข้อมูล
 csv_file = 'budget_data.csv'
@@ -47,6 +61,11 @@ def load_data():
 # โหลดข้อมูล
 df = load_data()
 
+# แปลงคอลัมน์ให้เป็นตัวเลขและแทนที่ NaN ด้วย 0
+df['งบประมาณที่ได้รับ (บาท)'] = pd.to_numeric(df['งบประมาณที่ได้รับ (บาท)'], errors='coerce')
+df['ผลการเบิกจ่าย (บาท)'] = pd.to_numeric(df['ผลการเบิกจ่าย (บาท)'], errors='coerce')
+df = df.fillna(0)  # แทนที่ NaN ด้วย 0
+
 # แสดงข้อมูลใน Streamlit
 st.title("ข้อมูลงบประมาณโครงการ")
 st.write("ข้อมูลงบประมาณและการเบิกจ่ายในโครงการต่างๆ")
@@ -70,6 +89,11 @@ if st.button("บันทึกข้อมูล"):
 
         # เพิ่มข้อมูลใหม่ลงใน DataFrame เดิม
         df = pd.concat([df, new_data], ignore_index=True)
+
+        # แปลงข้อมูลให้เป็นตัวเลขและแทนที่ NaN ด้วย 0
+        df['งบประมาณที่ได้รับ (บาท)'] = pd.to_numeric(df['งบประมาณที่ได้รับ (บาท)'], errors='coerce')
+        df['ผลการเบิกจ่าย (บาท)'] = pd.to_numeric(df['ผลการเบิกจ่าย (บาท)'], errors='coerce')
+        df = df.fillna(0)  # แทนที่ NaN ด้วย 0
 
         # บันทึกข้อมูลลงในไฟล์ CSV
         df.to_csv(csv_file, index=False)
@@ -117,4 +141,3 @@ ax.legend()
 
 # แสดงกราฟใน Streamlit
 st.pyplot(fig)
-

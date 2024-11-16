@@ -4,16 +4,23 @@ import streamlit as st
 import matplotlib.pyplot as plt
 from matplotlib import font_manager
 import os
+import urllib
 
-# ตั้งค่าฟอนต์ Kanit สำหรับ matplotlib
-font_path = r'C:\Users\Lenovo\Desktop\Kanit\Kanit-Regular.ttf'
+# URL ของฟอนต์ที่อัพโหลดไปยัง GitHub (raw link)
+font_url = "https://raw.githubusercontent.com/watt29/Streamlit/main/Kanit-Regular.ttf"
 
-# ตรวจสอบว่าฟอนต์ Kanit มีอยู่ในเครื่องหรือไม่
-if os.path.exists(font_path):
+# กำหนดเส้นทางที่จะบันทึกไฟล์ฟอนต์
+font_path = "Kanit-Regular.ttf"
+
+# โหลดฟอนต์จาก URL
+try:
+    urllib.request.urlretrieve(font_url, font_path)  # ดาวน์โหลดฟอนต์จาก URL
     font_prop = font_manager.FontProperties(fname=font_path)
-else:
-    st.warning("ฟอนต์ Kanit ไม่พบในเครื่อง จะใช้ฟอนต์เริ่มต้นแทน")
-    font_prop = font_manager.FontProperties()  # ใช้ฟอนต์เริ่มต้น
+    plt.rcParams['font.family'] = font_prop.get_name()  # ตั้งค่าให้ matplotlib ใช้ฟอนต์นี้
+    print("Font used:", plt.rcParams['font.family'])
+except Exception as e:
+    st.warning(f"ไม่สามารถดาวน์โหลดฟอนต์ได้: {e}")
+    plt.rcParams['font.family'] = 'Arial'  # ใช้ฟอนต์เริ่มต้นถ้าโหลดฟอนต์ไม่ได้
 
 # ชื่อไฟล์ CSV สำหรับบันทึกข้อมูล
 csv_file = 'budget_data.csv'

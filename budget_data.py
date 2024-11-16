@@ -4,6 +4,7 @@ import streamlit as st
 import matplotlib.pyplot as plt
 from matplotlib import font_manager
 import urllib
+import os  # เพิ่มการ import os เพื่อใช้งานฟังก์ชันเกี่ยวกับไฟล์
 
 # URL ของฟอนต์ที่อัพโหลดไปยัง GitHub (raw link)
 font_url = "https://raw.githubusercontent.com/watt29/Streamlit/main/Kanit-Regular.ttf"
@@ -27,7 +28,7 @@ csv_file = 'budget_data.csv'
 # ฟังก์ชันโหลดข้อมูลจาก CSV ถ้ามีไฟล์อยู่
 def load_data():
     try:
-        if os.path.exists(csv_file):
+        if os.path.exists(csv_file):  # ใช้ os.path.exists เพื่อตรวจสอบว่าไฟล์มีอยู่หรือไม่
             df = pd.read_csv(csv_file)
         else:
             # ถ้าไม่มีไฟล์ CSV สร้าง DataFrame จากข้อมูลตัวอย่าง

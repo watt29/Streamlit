@@ -4,7 +4,7 @@ import streamlit as st
 import matplotlib.pyplot as plt
 from matplotlib import font_manager
 import urllib
-import os  # เพิ่มการ import os เพื่อใช้งานฟังก์ชันเกี่ยวกับไฟล์
+import os
 
 # URL ของฟอนต์ที่อัพโหลดไปยัง GitHub (raw link)
 font_url = "https://raw.githubusercontent.com/watt29/Streamlit/main/Kanit-Regular.ttf"
@@ -104,6 +104,10 @@ if project_to_edit:
     current_budget = df.loc[project_index, 'งบประมาณที่ได้รับ (บาท)']
     current_spent = df.loc[project_index, 'ผลการเบิกจ่าย (บาท)']
 
+    # ตรวจสอบว่า current_spent เป็นตัวเลขหรือไม่
+    if not isinstance(current_spent, (int, float)): 
+        current_spent = 0.0  # กำหนดค่าเริ่มต้นเป็น 0 ถ้าเป็น None หรือ NaN
+
     # แสดงข้อมูลปัจจุบันในฟอร์ม
     new_budget = st.number_input("งบประมาณที่ได้รับ (บาท)", min_value=0, value=current_budget)
     new_spent = st.number_input("ผลการเบิกจ่าย (บาท)", min_value=0, value=current_spent)
@@ -122,7 +126,7 @@ if project_to_edit:
 # แสดงกราฟแสดงผลการเบิกจ่าย
 fig, ax = plt.subplots(figsize=(10, 6))
 
-# สร้างกราฟแท่ง
+# สร้างกราฟแท่งจากข้อมูลในตาราง
 ax.bar(df['รายการ'], df['งบประมาณที่ได้รับ (บาท)'], label='งบประมาณที่ได้รับ', alpha=0.7)
 ax.bar(df['รายการ'], df['ผลการเบิกจ่าย (บาท)'], label='ผลการเบิกจ่าย', alpha=0.7)
 

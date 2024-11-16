@@ -3,7 +3,6 @@ import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
 from matplotlib import font_manager
-import os
 import urllib
 
 # URL ของฟอนต์ที่อัพโหลดไปยัง GitHub (raw link)

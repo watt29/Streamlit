@@ -1,33 +1,19 @@
-import urllib.request
+import numpy as np
 import pandas as pd
+import streamlit as st
 import matplotlib.pyplot as plt
 from matplotlib import font_manager
-import streamlit as st
 import os
 
-# URL ของฟอนต์ที่อัพโหลดไปยัง GitHub (raw link)
-font_url = "https://raw.githubusercontent.com/watt29/Streamlit/main/Kanit-Regular.ttf"
+# ตั้งค่าฟอนต์ Kanit สำหรับ matplotlib
+font_path = r'C:\Users\Lenovo\Desktop\Kanit\Kanit-Regular.ttf'
 
-# กำหนดเส้นทางที่จะบันทึกไฟล์ฟอนต์
-font_path = "Kanit-Regular.ttf"
-
-# โหลดฟอนต์จาก URL
-try:
-    # ดาวน์โหลดฟอนต์จาก URL
-    urllib.request.urlretrieve(font_url, font_path)
-    
-    # ตรวจสอบว่าไฟล์ฟอนต์ถูกดาวน์โหลดสำเร็จ
-    if os.path.exists(font_path):
-        font_prop = font_manager.FontProperties(fname=font_path)
-        plt.rcParams['font.family'] = font_prop.get_name()  # ตั้งค่าให้ matplotlib ใช้ฟอนต์นี้
-        st.success(f"ฟอนต์ Kanit ถูกโหลดสำเร็จและตั้งค่าเรียบร้อยแล้ว")
-    else:
-        raise Exception("ฟอนต์ไม่สามารถดาวน์โหลดได้")
-
-except Exception as e:
-    st.warning(f"ไม่สามารถดาวน์โหลดฟอนต์ได้: {e}")
-    plt.rcParams['font.family'] = 'Arial'  # ใช้ฟอนต์เริ่มต้นถ้าโหลดฟอนต์ไม่ได้
-    st.warning("ฟอนต์ Kanit ไม่สามารถโหลดได้ ใช้ฟอนต์เริ่มต้นแทน")
+# ตรวจสอบว่าฟอนต์ Kanit มีอยู่ในเครื่องหรือไม่
+if os.path.exists(font_path):
+    font_prop = font_manager.FontProperties(fname=font_path)
+else:
+    st.warning("ฟอนต์ Kanit ไม่พบในเครื่อง จะใช้ฟอนต์เริ่มต้นแทน")
+    font_prop = font_manager.FontProperties()  # ใช้ฟอนต์เริ่มต้น
 
 # ชื่อไฟล์ CSV สำหรับบันทึกข้อมูล
 csv_file = 'budget_data.csv'
@@ -61,10 +47,9 @@ def load_data():
 # โหลดข้อมูล
 df = load_data()
 
-# แปลงคอลัมน์ให้เป็นตัวเลขและแทนที่ NaN ด้วย 0
-df['งบประมาณที่ได้รับ (บาท)'] = pd.to_numeric(df['งบประมาณที่ได้รับ (บาท)'], errors='coerce')
-df['ผลการเบิกจ่าย (บาท)'] = pd.to_numeric(df['ผลการเบิกจ่าย (บาท)'], errors='coerce')
-df = df.fillna(0)  # แทนที่ NaN ด้วย 0
+# แปลงคอลัมน์ให้เป็นตัวเลข และแทนที่ NaN ด้วย 0
+df['งบประมาณที่ได้รับ (บาท)'] = pd.to_numeric(df['งบประมาณที่ได้รับ (บาท)'], errors='coerce').fillna(0)
+df['ผลการเบิกจ่าย (บาท)'] = pd.to_numeric(df['ผลการเบิกจ่าย (บาท)'], errors='coerce').fillna(0)
 
 # แสดงข้อมูลใน Streamlit
 st.title("ข้อมูลงบประมาณโครงการ")
@@ -91,15 +76,16 @@ if st.button("บันทึกข้อมูล"):
         df = pd.concat([df, new_data], ignore_index=True)
 
         # แปลงข้อมูลให้เป็นตัวเลขและแทนที่ NaN ด้วย 0
-        df['งบประมาณที่ได้รับ (บาท)'] = pd.to_numeric(df['งบประมาณที่ได้รับ (บาท)'], errors='coerce')
-        df['ผลการเบิกจ่าย (บาท)'] = pd.to_numeric(df['ผลการเบิกจ่าย (บาท)'], errors='coerce')
-        df = df.fillna(0)  # แทนที่ NaN ด้วย 0
+        df['งบประมาณที่ได้รับ (บาท)'] = pd.to_numeric(df['งบประมาณที่ได้รับ (บาท)'], errors='coerce').fillna(0)
+        df['ผลการเบิกจ่าย (บาท)'] = pd.to_numeric(df['ผลการเบิกจ่าย (บาท)'], errors='coerce').fillna(0)
 
         # บันทึกข้อมูลลงในไฟล์ CSV
         df.to_csv(csv_file, index=False)
 
         st.success("บันทึกข้อมูลสำเร็จ!")
-        st.experimental_rerun()  # รีเฟรชหน้าเพื่อแสดงข้อมูลที่อัปเดตใหม่
+        st.dataframe(df)  # แสดงข้อมูลใหม่
+    else:
+        st.error("กรุณากรอกข้อมูลให้ครบถ้วน")
 
 # ฟอร์มแก้ไขข้อมูล
 st.header("แก้ไขข้อมูลโครงการ")
@@ -110,11 +96,6 @@ if project_to_edit:
     project_index = df[df['รายการ'] == project_to_edit].index[0]
     current_budget = df.loc[project_index, 'งบประมาณที่ได้รับ (บาท)']
     current_spent = df.loc[project_index, 'ผลการเบิกจ่าย (บาท)']
-
-    # แปลงค่าที่ไม่สามารถแปลงเป็นตัวเลขได้ (เช่น NaN) เป็น 0
-    current_spent = pd.to_numeric(current_spent, errors='coerce')
-    if pd.isna(current_spent):
-        current_spent = 0  # กำหนดเป็น 0 ถ้าค่าเป็น NaN
 
     # แสดงข้อมูลปัจจุบันในฟอร์ม
     new_budget = st.number_input("งบประมาณที่ได้รับ (บาท)", min_value=0, value=current_budget)
@@ -129,7 +110,7 @@ if project_to_edit:
         df.to_csv(csv_file, index=False)
 
         st.success("แก้ไขข้อมูลสำเร็จ!")
-        st.experimental_rerun()  # รีเฟรชหน้าเพื่อแสดงข้อมูลที่อัปเดตใหม่
+        st.dataframe(df)  # แสดงข้อมูลที่แก้ไข
 
 # แสดงกราฟแสดงผลการเบิกจ่าย
 fig, ax = plt.subplots(figsize=(10, 6))

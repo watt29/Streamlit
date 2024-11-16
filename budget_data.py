@@ -111,6 +111,11 @@ if project_to_edit:
     current_budget = df.loc[project_index, 'งบประมาณที่ได้รับ (บาท)']
     current_spent = df.loc[project_index, 'ผลการเบิกจ่าย (บาท)']
 
+    # แปลงค่าที่ไม่สามารถแปลงเป็นตัวเลขได้ (เช่น NaN) เป็น 0
+    current_spent = pd.to_numeric(current_spent, errors='coerce')
+    if pd.isna(current_spent):
+        current_spent = 0  # กำหนดเป็น 0 ถ้าค่าเป็น NaN
+
     # แสดงข้อมูลปัจจุบันในฟอร์ม
     new_budget = st.number_input("งบประมาณที่ได้รับ (บาท)", min_value=0, value=current_budget)
     new_spent = st.number_input("ผลการเบิกจ่าย (บาท)", min_value=0, value=current_spent)

@@ -21,7 +21,7 @@ def load_font():
         if os.path.exists(font_path):  # ตรวจสอบว่าไฟล์ฟอนต์ถูกดาวน์โหลดเรียบร้อยแล้ว
             font_prop = font_manager.FontProperties(fname=font_path)
             rcParams['font.family'] = font_prop.get_name()  # ตั้งค่าให้ matplotlib ใช้ฟอนต์นี้
-            st.success("ฟอนต์ถูกโหลดเรียบร้อยแล้ว")
+            st.success()
             return True
         else:
             raise FileNotFoundError("ไม่พบไฟล์ฟอนต์ที่ดาวน์โหลด")

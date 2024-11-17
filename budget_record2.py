@@ -14,12 +14,9 @@ font_path = "Kanit-Regular.ttf"
 try:
     urllib.request.urlretrieve(font_url, font_path)
     font_prop = fm.FontProperties(fname=font_path)
-    fm.fontManager.fontFamilyCache.clear()
-    fm.fontManager._rebuild()
     plt.rcParams['font.family'] = font_prop.get_name()
-except Exception as e:
-    st.warning(f"ไม่สามารถโหลดฟอนต์ได้: {e}. ใช้ฟอนต์ Arial แทน")
-    plt.rcParams['font.family'] = 'Arial'
+except Exception:
+    plt.rcParams['font.family'] = 'Arial'  # ใช้ฟอนต์ Arial เป็นค่าเริ่มต้นหากโหลดฟอนต์ไม่สำเร็จ
 
 # ชื่อไฟล์ CSV
 csv_file = 'budget_data1.csv'
@@ -47,7 +44,7 @@ def load_data():
             df = pd.DataFrame(data)
             df.to_csv(csv_file, index=False)
             return df
-    except Exception as e:
+    except Exception:
         st.error("ไม่สามารถโหลดข้อมูลจากไฟล์ CSV ได้")
         return pd.DataFrame()
 
@@ -56,7 +53,7 @@ def save_data(df):
     try:
         df.to_csv(csv_file, index=False)
         st.success("ข้อมูลบันทึกเรียบร้อย")
-    except Exception as e:
+    except Exception:
         st.error("เกิดข้อผิดพลาดขณะบันทึกข้อมูล")
 
 # ฟังก์ชันคำนวณเปอร์เซ็นต์การใช้จ่าย
@@ -74,13 +71,13 @@ def plot_budget_chart(df):
     ax.barh(x + 0.2, df['งบประมาณที่ได้รับ (บาท)'], color='#FF6347', label='งบประมาณที่ได้รับ', edgecolor='black', height=0.4)
 
     for i, (spent, budget) in enumerate(zip(df['จำนวนเงินที่ใช้ไปแล้ว (บาท)'], df['งบประมาณที่ได้รับ (บาท)'])):
-        ax.text(spent + 5000, i - 0.2, f'{spent:,.2f}', va='center', fontproperties=font_prop, fontsize=10)
-        ax.text(budget + 5000, i + 0.2, f'{budget:,.2f}', va='center', fontproperties=font_prop, fontsize=10)
+        ax.text(spent + 5000, i - 0.2, f'{spent:,.2f}', va='center', fontsize=10, fontproperties=font_prop)
+        ax.text(budget + 5000, i + 0.2, f'{budget:,.2f}', va='center', fontsize=10, fontproperties=font_prop)
 
     ax.set_xlabel('จำนวนเงิน (บาท)', fontproperties=font_prop)
     ax.set_ylabel('รายการงบประมาณ', fontproperties=font_prop)
     ax.set_yticks(x)
-    ax.set_yticklabels(df['รายการงบประมาณ'], fontproperties=font_prop, fontsize=10)
+    ax.set_yticklabels(df['รายการงบประมาณ'], fontsize=10, fontproperties=font_prop)
     ax.set_title('การใช้จ่ายงบประมาณ', fontproperties=font_prop)
     ax.legend(prop=font_prop)
     st.pyplot(fig)

@@ -6,18 +6,15 @@ from matplotlib import font_manager
 import urllib.request
 import os
 
-# URL ของฟอนต์ที่อัพโหลดไปยัง GitHub (raw link)
+# ฟอนต์ภาษาไทยจาก URL
 font_url = "https://raw.githubusercontent.com/watt29/Streamlit/main/Kanit-Regular.ttf"
-
-# กำหนดเส้นทางที่จะบันทึกไฟล์ฟอนต์
 font_path = "Kanit-Regular.ttf"
 
 # โหลดฟอนต์จาก URL
 try:
-    urllib.request.urlretrieve(font_url, font_path)  # ดาวน์โหลดฟอนต์จาก URL
+    urllib.request.urlretrieve(font_url, font_path)  # ดาวน์โหลดฟอนต์
     font_prop = font_manager.FontProperties(fname=font_path)
     plt.rcParams['font.family'] = font_prop.get_name()  # ตั้งค่าให้ matplotlib ใช้ฟอนต์นี้
-    print("Font used:", plt.rcParams['font.family'])
 except Exception as e:
     st.warning(f"ไม่สามารถดาวน์โหลดฟอนต์ได้: {e}")
     plt.rcParams['font.family'] = 'Arial'  # ใช้ฟอนต์เริ่มต้นถ้าโหลดฟอนต์ไม่ได้

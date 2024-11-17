@@ -2,19 +2,26 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
-from matplotlib import font_manager
+import matplotlib.font_manager as fm
 import urllib.request
 import os
 
-# ฟอนต์ภาษาไทยจาก URL
+# URL ของฟอนต์ที่อัพโหลดไปยัง GitHub (raw link)
 font_url = "https://raw.githubusercontent.com/watt29/Streamlit/main/Kanit-Regular.ttf"
 font_path = "Kanit-Regular.ttf"
 
 # โหลดฟอนต์จาก URL
 try:
-    urllib.request.urlretrieve(font_url, font_path)  # ดาวน์โหลดฟอนต์
-    font_prop = font_manager.FontProperties(fname=font_path)
-    plt.rcParams['font.family'] = font_prop.get_name()  # ตั้งค่าให้ matplotlib ใช้ฟอนต์นี้
+    urllib.request.urlretrieve(font_url, font_path)  # ดาวน์โหลดฟอนต์จาก URL
+
+    # เพิ่มฟอนต์ไปยัง font manager
+    fm.fontManager.addfont(font_path)
+    font_prop = fm.FontProperties(fname=font_path)
+
+    # ตั้งค่า Matplotlib ให้ใช้ฟอนต์นี้
+    plt.rcParams['font.family'] = font_prop.get_name()
+    print(f"Font '{font_prop.get_name()}' successfully added!")
+
 except Exception as e:
     st.warning(f"ไม่สามารถดาวน์โหลดฟอนต์ได้: {e}")
     plt.rcParams['font.family'] = 'Arial'  # ใช้ฟอนต์เริ่มต้นถ้าโหลดฟอนต์ไม่ได้
@@ -140,15 +147,19 @@ if option == 'แก้ไขข้อมูลเดิม':
     old_budget = df.at[project_index, 'งบประมาณที่ได้รับ (บาท)']
     old_spent = df.at[project_index, 'ผลการเบิกจ่าย (บาท)']
 
-    # ฟอร์มแก้ไขข้อมูล
-    new_budget = st.number_input('แก้ไขงบประมาณที่ได้รับ (บาท)', min_value=0, value=old_budget)
-    new_spent = st.number_input('แก้ไขผลการเบิกจ่าย (บาท)', min_value=0, value=old_spent)
-    
+    # กรอกข้อมูลใหม่
+    st.write(f"แก้ไขข้อมูลสำหรับโครงการ: {project_to_edit}")
+    new_budget = st.number_input('งบประมาณที่ได้รับ (บาท)', min_value=0, value=old_budget)
+    new_spent = st.number_input('ผลการเบิกจ่าย (บาท)', min_value=0, value=old_spent)
+
     if st.button('อัปเดตข้อมูล'):
-        # อัปเดตข้อมูล
+        # อัปเดตข้อมูลใน DataFrame
         df.at[project_index, 'งบประมาณที่ได้รับ (บาท)'] = new_budget
         df.at[project_index, 'ผลการเบิกจ่าย (บาท)'] = new_spent
+        # คำนวณเปอร์เซ็นต์การเบิกจ่ายใหม่
         df['เปอร์เซ็นต์การเบิกจ่าย (%)'] = (df['ผลการเบิกจ่าย (บาท)'] / df['งบประมาณที่ได้รับ (บาท)'] * 100).round(2)
-        # บันทึกข้อมูลที่อัปเดต
+        # อัปเดต DataFrame ใน session_state
+        st.session_state.df = df
+        # บันทึกข้อมูลใน CSV
         df.to_csv(csv_file, index=False)
-        st.success("ข้อมูลได้รับการอัปเดตแล้ว")
+        st.success("ข้อมูลถูกอัปเดตเรียบร้อยแล้ว")

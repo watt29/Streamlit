@@ -5,15 +5,15 @@ import streamlit as st
 import os
 from matplotlib import font_manager, rcParams
 
-# ตั้งชื่อไฟล์ CSV ใหม่
-csv_file = 'budget_data.csv'
+ 
 
-# ตั้งค่าฟอนต์ภาษาไทยสำหรับการแสดงผลในกราฟ
-font_path = r'C:\Windows\Fonts\tahoma.ttf'  # เปลี่ยนเป็นที่อยู่ฟอนต์ที่ถูกต้อง
+# ตัวอย่างการใช้ฟอนต์ Google Fonts
+font_path = "https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap"
 font_prop = font_manager.FontProperties(fname=font_path)
 
-# ตั้งค่าฟอนต์ให้ matplotlib ใช้
 rcParams['font.family'] = font_prop.get_name()
+
+ 
 
 # ตรวจสอบว่ามีข้อมูลเก่าหรือไม่
 if 'df' not in st.session_state:

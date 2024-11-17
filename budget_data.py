@@ -21,17 +21,21 @@ def load_font():
         if os.path.exists(font_path):  # ตรวจสอบว่าไฟล์ฟอนต์ถูกดาวน์โหลดเรียบร้อยแล้ว
             font_prop = font_manager.FontProperties(fname=font_path)
             rcParams['font.family'] = font_prop.get_name()  # ตั้งค่าให้ matplotlib ใช้ฟอนต์นี้
-            st.success("")
-            return True
+            st.success("ฟอนต์ถูกโหลดเรียบร้อยแล้ว")
+            return font_prop
         else:
             raise FileNotFoundError("ไม่พบไฟล์ฟอนต์ที่ดาวน์โหลด")
     except Exception as e:
         st.warning(f"ไม่สามารถดาวน์โหลดฟอนต์ได้: {e}")
         rcParams['font.family'] = 'Arial'  # ใช้ฟอนต์เริ่มต้นถ้าโหลดฟอนต์ไม่ได้
-        return False
+        return None
 
 # เรียกใช้งานฟังก์ชันเพื่อโหลดฟอนต์
-load_font()
+font_prop = load_font()
+
+# ถ้าไม่สามารถโหลดฟอนต์ได้ให้แสดงข้อความเตือน
+if font_prop is None:
+    st.warning("กรุณาใช้ฟอนต์ที่รองรับภาษาไทย")
 
 # ตั้งชื่อไฟล์ CSV ใหม่
 csv_file = 'budget_data.csv'
@@ -78,10 +82,11 @@ option = st.selectbox(
 if option == 'ดูกราฟ':
     index = np.arange(len(df))  # สร้าง index สำหรับการแสดงผลกราฟ
 
-    fig, ax = plt.subplots(figsize=(10, 6))
-
     # กราฟแท่ง
     bar_width = 0.35
+
+    # สร้างกราฟแท่ง
+    fig, ax = plt.subplots(figsize=(10, 6))
 
     # กราฟงบประมาณที่ได้รับ
     bars1 = ax.bar(index, df['งบประมาณที่ได้รับ (บาท)'], bar_width, label='งบประมาณที่ได้รับ (บาท)', color='skyblue')
@@ -92,19 +97,21 @@ if option == 'ดูกราฟ':
     # เพิ่มตัวเลขบนแท่ง
     for i, bar in enumerate(bars1):
         height = bar.get_height()
-        ax.text(bar.get_x() + bar.get_width() / 2, height + 100, f'{height}', ha='center', va='bottom', fontsize=10, fontweight='bold', color='darkblue')
+        ax.text(bar.get_x() + bar.get_width() / 2, height + 100, f'{height}', ha='center', va='bottom', 
+                fontsize=10, fontweight='bold', color='darkblue', fontproperties=font_prop)
 
     for i, bar in enumerate(bars2):
         height = bar.get_height()
-        ax.text(bar.get_x() + bar.get_width() / 2, height + 100, f'{height}', ha='center', va='bottom', fontsize=10, fontweight='bold', color='darkred')
+        ax.text(bar.get_x() + bar.get_width() / 2, height + 100, f'{height}', ha='center', va='bottom', 
+                fontsize=10, fontweight='bold', color='darkred', fontproperties=font_prop)
 
     # ปรับแต่งกราฟ
-    ax.set_xlabel('รายการ', fontproperties=font_manager.FontProperties(fname=font_path), fontsize=14)
-    ax.set_ylabel('จำนวนเงิน (บาท)', fontproperties=font_manager.FontProperties(fname=font_path), fontsize=14)
-    ax.set_title('การเปรียบเทียบงบประมาณที่ได้รับและผลการเบิกจ่าย', fontproperties=font_manager.FontProperties(fname=font_path), fontsize=16)
+    ax.set_xlabel('รายการ', fontproperties=font_prop, fontsize=14)
+    ax.set_ylabel('จำนวนเงิน (บาท)', fontproperties=font_prop, fontsize=14)
+    ax.set_title('การเปรียบเทียบงบประมาณที่ได้รับและผลการเบิกจ่าย', fontproperties=font_prop, fontsize=16)
     ax.set_xticks(index + bar_width / 2)
-    ax.set_xticklabels(df['รายการ'], rotation=45, ha="right", fontproperties=font_manager.FontProperties(fname=font_path), fontsize=12)
-    ax.legend()
+    ax.set_xticklabels(df['รายการ'], rotation=45, ha="right", fontproperties=font_prop, fontsize=12)
+    ax.legend(prop=font_prop)
 
     # แสดงกราฟใน Streamlit
     st.write("### การเปรียบเทียบงบประมาณที่ได้รับและผลการเบิกจ่าย")

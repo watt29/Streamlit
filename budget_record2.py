@@ -7,10 +7,10 @@ import urllib.request
 import os
 
 # URL ของฟอนต์ที่อัพโหลดไปยัง GitHub (raw link)
-https://github.com/watt29/Streamlit/raw/main/Tahoma.ttf
+https://github.com/watt29/Streamlit/raw/main/Kanit-Regular.ttf
 
 # กำหนดเส้นทางที่จะบันทึกไฟล์ฟอนต์
-font_path = "Tahoma.ttf"
+font_path = "Kanit-Regular.ttf"
 
 # โหลดฟอนต์จาก URL
 try:

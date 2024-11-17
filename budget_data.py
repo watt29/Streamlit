@@ -143,19 +143,15 @@ if option == 'แก้ไขข้อมูลเดิม':
     old_budget = df.at[project_index, 'งบประมาณที่ได้รับ (บาท)']
     old_spent = df.at[project_index, 'ผลการเบิกจ่าย (บาท)']
 
-    # กรอกข้อมูลใหม่
-    st.write(f"แก้ไขข้อมูลสำหรับโครงการ: {project_to_edit}")
-    new_budget = st.number_input('งบประมาณที่ได้รับ (บาท)', min_value=0, value=old_budget)
-    new_spent = st.number_input('ผลการเบิกจ่าย (บาท)', min_value=0, value=old_spent)
-
+    # ฟอร์มแก้ไขข้อมูล
+    new_budget = st.number_input('แก้ไขงบประมาณที่ได้รับ (บาท)', min_value=0, value=old_budget)
+    new_spent = st.number_input('แก้ไขผลการเบิกจ่าย (บาท)', min_value=0, value=old_spent)
+    
     if st.button('อัปเดตข้อมูล'):
-        # อัปเดตข้อมูลใน DataFrame
+        # อัปเดตข้อมูล
         df.at[project_index, 'งบประมาณที่ได้รับ (บาท)'] = new_budget
         df.at[project_index, 'ผลการเบิกจ่าย (บาท)'] = new_spent
-        # คำนวณเปอร์เซ็นต์การเบิกจ่ายใหม่
         df['เปอร์เซ็นต์การเบิกจ่าย (%)'] = (df['ผลการเบิกจ่าย (บาท)'] / df['งบประมาณที่ได้รับ (บาท)'] * 100).round(2)
-        # อัปเดต DataFrame ใน session_state
-        st.session_state.df = df
-        # บันทึกข้อมูลใน CSV
+        # บันทึกข้อมูลที่อัปเดต
         df.to_csv(csv_file, index=False)
-        st.success("ข้อมูลถูกอัปเดตเรียบร้อยแล้ว")
+        st.success("ข้อมูลได้รับการอัปเดตแล้ว")

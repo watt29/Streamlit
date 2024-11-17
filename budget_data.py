@@ -6,7 +6,7 @@ import os
 from matplotlib import font_manager, rcParams
 
 # ตั้งชื่อไฟล์ CSV ใหม่
-csv_file = 'newbudget_data.csv'
+csv_file = 'budget_data.csv'
 
 # ตั้งค่าฟอนต์ภาษาไทยสำหรับการแสดงผลในกราฟ
 font_path = r'C:\Windows\Fonts\tahoma.ttf'  # เปลี่ยนเป็นที่อยู่ฟอนต์ที่ถูกต้อง

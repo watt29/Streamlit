@@ -5,7 +5,7 @@ import streamlit as st
 import os
 
 # ตั้งชื่อไฟล์ CSV ใหม่
-csv_file = 'new_budget_data.csv'  # เปลี่ยนชื่อไฟล์ที่นี่
+csv_file = 'budget_data.csv'  # เปลี่ยนชื่อไฟล์ที่นี่
 
 # ตรวจสอบว่ามีข้อมูลเก่าหรือไม่
 if 'df' not in st.session_state:
@@ -132,8 +132,8 @@ if option == 'แก้ไขข้อมูลเดิม':
         df.at[project_index, 'ผลการเบิกจ่าย (บาท)'] = new_spent
         # คำนวณเปอร์เซ็นต์การเบิกจ่ายใหม่
         df['เปอร์เซ็นต์การเบิกจ่าย (%)'] = (df['ผลการเบิกจ่าย (บาท)'] / df['งบประมาณที่ได้รับ (บาท)'] * 100).round(2)
-        # อัปเดต DataFrame ใน session_state
+        # อัปเดตข้อมูลใน session_state
         st.session_state.df = df
         # บันทึกข้อมูลใน CSV
         df.to_csv(csv_file, index=False)
-        st.success("ข้อมูลถูกอัปเดตเรียบร้อยแล้ว")
+        st.success("ข้อมูลได้รับการอัปเดตเรียบร้อยแล้ว")

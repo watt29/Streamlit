@@ -1,37 +1,11 @@
-import numpy as np
 import pandas as pd
-import streamlit as st
+import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.font_manager as fm
-import urllib.request
+import streamlit as st
 import os
 
-# URL ของฟอนต์ที่อัพโหลดไปยัง GitHub (raw link)
-font_url = "https://raw.githubusercontent.com/watt29/Streamlit/main/Kanit-Regular.ttf"
-font_path = "Kanit-Regular.ttf"
-
-# โหลดฟอนต์จาก URL
-try:
-    urllib.request.urlretrieve(font_url, font_path)  # ดาวน์โหลดฟอนต์จาก URL
-
-    # เพิ่มฟอนต์ไปยัง font manager
-    fm.fontManager.addfont(font_path)
-    font_prop = fm.FontProperties(fname=font_path)
-
-    # ตั้งค่า Matplotlib ให้ใช้ฟอนต์นี้
-    plt.rcParams['font.family'] = font_prop.get_name()
-    print(f"Font '{font_prop.get_name()}' successfully added!")
-
-except Exception as e:
-    st.warning(f"ไม่สามารถดาวน์โหลดฟอนต์ได้: {e}")
-    plt.rcParams['font.family'] = 'Arial'  # ใช้ฟอนต์เริ่มต้นถ้าโหลดฟอนต์ไม่ได้
-
-# ลบฟอนต์หลังใช้งาน
-if os.path.exists(font_path):
-    os.remove(font_path)
-
-# ตั้งชื่อไฟล์ CSV
-csv_file = 'budget_data.csv'
+# ตั้งชื่อไฟล์ CSV ใหม่
+csv_file = 'new_budget_data.csv'  # เปลี่ยนชื่อไฟล์ที่นี่
 
 # ตรวจสอบว่ามีข้อมูลเก่าหรือไม่
 if 'df' not in st.session_state:
@@ -51,7 +25,7 @@ if 'df' not in st.session_state:
 
         # สร้าง DataFrame
         df = pd.DataFrame(data)
-        # บันทึก DataFrame ลงไฟล์ CSV
+        # บันทึก DataFrame ลงไฟล์ CSV ใหม่
         df.to_csv(csv_file, index=False)
     else:
         # โหลดข้อมูลจาก CSV หากมีไฟล์

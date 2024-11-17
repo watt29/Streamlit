@@ -20,7 +20,7 @@ try:
     print("Font used:", plt.rcParams['font.family'])
 except Exception as e:
     st.warning(f"ไม่สามารถดาวน์โหลดฟอนต์ได้: {e}")
-    plt.rcParams['font.family'] = 'Arial'  # ใช้ฟอนต์เริ่มต้นถ้าโหลดฟอนต์ไม่สำเร็จ
+    plt.rcParams['font.family'] = 'Arial'  # ใช้ฟอนต์เริ่มต้นถ้าโหลดฟอนต์ไม่ได้
 
 # ลบฟอนต์หลังใช้งาน
 if os.path.exists(font_path):

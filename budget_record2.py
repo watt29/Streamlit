@@ -23,7 +23,7 @@ except Exception as e:
     plt.rcParams['font.family'] = 'Arial'  # ใช้ฟอนต์เริ่มต้นถ้าโหลดฟอนต์ไม่ได้
 
 # ชื่อไฟล์ CSV สำหรับบันทึกข้อมูล
-csv_file = 'budget_data.csv'
+csv_file = 'budget_data1.csv'
 
 # ฟังก์ชันโหลดข้อมูลจาก CSV ถ้ามีไฟล์อยู่
 def load_data():

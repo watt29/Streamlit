@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import streamlit as st
 import os
+from matplotlib import font_manager
 
 # ตั้งชื่อไฟล์ CSV ใหม่
 csv_file = 'budget_data.csv'  # เปลี่ยนชื่อไฟล์ที่นี่
@@ -40,6 +41,10 @@ if 'df' not in st.session_state:
 else:
     df = st.session_state.df
 
+# ตั้งค่าฟอนต์ภาษาไทยสำหรับการแสดงผลในกราฟ
+font_path = 'D:\\my_streamlit_project\\Kanit-Regular.ttf'  # เปลี่ยนเป็นที่อยู่ฟอนต์ที่ถูกต้อง
+font_prop = font_manager.FontProperties(fname=font_path)
+
 # เพิ่มตัวเลือกให้เลือกดูกราฟหรือกรอกข้อมูลใหม่
 option = st.selectbox(
     'เลือกตัวเลือก:',
@@ -72,11 +77,11 @@ if option == 'ดูกราฟ':
         ax.text(bar.get_x() + bar.get_width() / 2, height + 100, f'{height}', ha='center', va='bottom', fontsize=10, fontweight='bold', color='darkred')
 
     # ปรับแต่งกราฟ
-    ax.set_xlabel('รายการ')
-    ax.set_ylabel('จำนวนเงิน (บาท)')
-    ax.set_title('การเปรียบเทียบงบประมาณที่ได้รับและผลการเบิกจ่าย')
+    ax.set_xlabel('รายการ', fontproperties=font_prop)
+    ax.set_ylabel('จำนวนเงิน (บาท)', fontproperties=font_prop)
+    ax.set_title('การเปรียบเทียบงบประมาณที่ได้รับและผลการเบิกจ่าย', fontproperties=font_prop)
     ax.set_xticks(index + bar_width / 2)
-    ax.set_xticklabels(df['รายการ'], rotation=45, ha="right")
+    ax.set_xticklabels(df['รายการ'], rotation=45, ha="right", fontproperties=font_prop)
     ax.legend()
 
     # แสดงกราฟใน Streamlit

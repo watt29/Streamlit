@@ -7,7 +7,7 @@ from matplotlib import font_manager, rcParams
 import urllib.request
 
 # URL ของฟอนต์ที่อัพโหลดไปยัง GitHub (raw link)
-font_url = "https://github.com/watt29/Streamlit/raw/main/Tahoma.ttf"
+font_url = "https://raw.githubusercontent.com/watt29/Streamlit/main/Tahoma.ttf"
 
 # กำหนดเส้นทางที่จะบันทึกไฟล์ฟอนต์
 font_path = "Tahoma.ttf"

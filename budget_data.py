@@ -108,13 +108,13 @@ if option == 'ดูกราฟ':
     # ปรับแต่งกราฟ
     ax.set_xlabel('รายการ', fontproperties=font_prop, fontsize=14)
     ax.set_ylabel('จำนวนเงิน (บาท)', fontproperties=font_prop, fontsize=14)
-    ax.set_title('การเปรียบเทียบงบประมาณที่ได้รับและผลการเบิกจ่าย', fontproperties=font_prop, fontsize=16)
+    ax.set_title('รายงานผลการใช้จ่ายงบประมาณประจำปี', fontproperties=font_prop, fontsize=16)
     ax.set_xticks(index + bar_width / 2)
     ax.set_xticklabels(df['รายการ'], rotation=45, ha="right", fontproperties=font_prop, fontsize=12)
     ax.legend(prop=font_prop)
 
     # แสดงกราฟใน Streamlit
-    st.write("### การเปรียบเทียบงบประมาณที่ได้รับและผลการเบิกจ่าย")
+    st.write("### รายงานผลการใช้จ่ายงบประมาณประจำปี")
     st.pyplot(fig)
 
 # ถ้าเลือกกรอกข้อมูลใหม่

@@ -1,37 +1,35 @@
-import numpy as np
-import pandas as pd
-import streamlit as st
-import matplotlib.pyplot as plt
-from matplotlib import font_manager
 import urllib.request
+import matplotlib.font_manager as fm
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+import streamlit as st
 import os
 
-# URL ของฟอนต์ที่อัพโหลดไปยัง GitHub (raw link)
+# URL ฟอนต์
 font_url = "https://raw.githubusercontent.com/watt29/Streamlit/main/Kanit-Regular.ttf"
-
-# กำหนดเส้นทางที่จะบันทึกไฟล์ฟอนต์
 font_path = "Kanit-Regular.ttf"
 
 # โหลดฟอนต์จาก URL
 try:
-    urllib.request.urlretrieve(font_url, font_path)  # ดาวน์โหลดฟอนต์จาก URL
-    font_prop = font_manager.FontProperties(fname=font_path)
-    plt.rcParams['font.family'] = font_prop.get_name()  # ตั้งค่าให้ matplotlib ใช้ฟอนต์นี้
-    print("Font used:", plt.rcParams['font.family'])
+    urllib.request.urlretrieve(font_url, font_path)
+    font_prop = fm.FontProperties(fname=font_path)
+    fm.fontManager.fontFamilyCache.clear()
+    fm.fontManager._rebuild()
+    plt.rcParams['font.family'] = font_prop.get_name()
 except Exception as e:
-    st.warning(f"ไม่สามารถดาวน์โหลดฟอนต์ได้: {e}")
-    plt.rcParams['font.family'] = 'Arial'  # ใช้ฟอนต์เริ่มต้นถ้าโหลดฟอนต์ไม่ได้
+    st.warning(f"ไม่สามารถโหลดฟอนต์ได้: {e}. ใช้ฟอนต์ Arial แทน")
+    plt.rcParams['font.family'] = 'Arial'
 
-# ชื่อไฟล์ CSV สำหรับบันทึกข้อมูล
+# ชื่อไฟล์ CSV
 csv_file = 'budget_data1.csv'
 
-# ฟังก์ชันโหลดข้อมูลจาก CSV ถ้ามีไฟล์อยู่
+# ฟังก์ชันโหลดข้อมูลจาก CSV
 def load_data():
     try:
         if os.path.exists(csv_file):
-            df = pd.read_csv(csv_file)
+            return pd.read_csv(csv_file)
         else:
-            # ถ้าไม่มีไฟล์ CSV สร้าง DataFrame จากข้อมูลตัวอย่าง
             data = {
                 'รายการงบประมาณ': [
                     'ค่า OT', 'รวมค่าตอบแทนคุ้มครองพยาน', 'ค่าตอบแทนพยาน', 'ค่าคุ้มครองพยาน', 'ค่าตอบแทนนักจิตวิทยา',
@@ -47,114 +45,87 @@ def load_data():
                 'จำนวนเงินที่ใช้ไปแล้ว (บาท)': [0.0] * 18
             }
             df = pd.DataFrame(data)
-            df.to_csv(csv_file, index=False)  # บันทึกข้อมูลเริ่มต้นลงใน CSV
-        return df
+            df.to_csv(csv_file, index=False)
+            return df
     except Exception as e:
-        st.error("ไม่สามารถโหลดข้อมูลจากไฟล์ CSV ได้ กรุณาตรวจสอบไฟล์")
-        return pd.DataFrame()  # ส่ง DataFrame ว่างในกรณีที่โหลดไฟล์ไม่ได้
+        st.error("ไม่สามารถโหลดข้อมูลจากไฟล์ CSV ได้")
+        return pd.DataFrame()
 
-# ฟังก์ชันบันทึกข้อมูลลงใน CSV
+# ฟังก์ชันบันทึกข้อมูลลง CSV
 def save_data(df):
     try:
         df.to_csv(csv_file, index=False)
-        st.success("ข้อมูลบันทึกลงในไฟล์ CSV เรียบร้อยแล้ว")
+        st.success("ข้อมูลบันทึกเรียบร้อย")
     except Exception as e:
         st.error("เกิดข้อผิดพลาดขณะบันทึกข้อมูล")
 
 # ฟังก์ชันคำนวณเปอร์เซ็นต์การใช้จ่าย
 def calculate_percentage_spent(df):
     df['เปอร์เซ็นต์การใช้จ่าย (%)'] = (df['จำนวนเงินที่ใช้ไปแล้ว (บาท)'] / df['งบประมาณที่ได้รับ (บาท)']) * 100
-    df['เปอร์เซ็นต์การใช้จ่าย (%)'] = df['เปอร์เซ็นต์การใช้จ่าย (%)'].round(2)
+    df['เปอร์เซ็นต์การใช้จ่าย (%)'] = df['เปอร์เซ็นต์การใช้จ่าย (%)'].fillna(0).round(2)
     return df
 
-# ฟังก์ชันสร้างกราฟแท่งแนวนอน
+# ฟังก์ชันสร้างกราฟ
 def plot_budget_chart(df):
-    fig, ax = plt.subplots(figsize=(20, 10))
+    fig, ax = plt.subplots(figsize=(12, 8))
     x = np.arange(len(df))
 
-    # แสดงแท่งกราฟที่ใช้จ่าย
-    ax.barh(x - 0.2, df['จำนวนเงินที่ใช้ไปแล้ว (บาท)'], color='#32CD32', label='จำนวนเงินที่ใช้ไปแล้ว', edgecolor='black', height=0.45)
+    ax.barh(x - 0.2, df['จำนวนเงินที่ใช้ไปแล้ว (บาท)'], color='#32CD32', label='จำนวนเงินที่ใช้ไปแล้ว', edgecolor='black', height=0.4)
+    ax.barh(x + 0.2, df['งบประมาณที่ได้รับ (บาท)'], color='#FF6347', label='งบประมาณที่ได้รับ', edgecolor='black', height=0.4)
 
-    # แสดงแท่งกราฟงบประมาณที่ได้รับ
-    ax.barh(x + 0.2, df['งบประมาณที่ได้รับ (บาท)'], color='#FF6347', label='งบประมาณที่ได้รับ', edgecolor='black', height=0.45)
-
-    # เพิ่มค่าให้กับแต่ละแท่ง
     for i, (spent, budget) in enumerate(zip(df['จำนวนเงินที่ใช้ไปแล้ว (บาท)'], df['งบประมาณที่ได้รับ (บาท)'])):
-        ax.text(spent + 10000, i - 0.2, f'{spent:,.2f}', va='center', fontproperties=font_prop, fontsize=12, fontweight='bold', color="black")
-        ax.text(budget + 10000, i + 0.2, f'{budget:,.2f}', va='center', fontproperties=font_prop, fontsize=12, fontweight='bold', color="black")
+        ax.text(spent + 5000, i - 0.2, f'{spent:,.2f}', va='center', fontproperties=font_prop, fontsize=10)
+        ax.text(budget + 5000, i + 0.2, f'{budget:,.2f}', va='center', fontproperties=font_prop, fontsize=10)
 
-    ax.set_xlabel('จำนวนเงิน (บาท)', fontproperties=font_prop, fontsize=12, color="black")
-    ax.set_ylabel('รายการงบประมาณ', fontproperties=font_prop, fontsize=12, color="black")
-    ax.set_title('การใช้จ่ายและงบประมาณที่ได้รับ', fontproperties=font_prop, fontsize=14, color="black")
-    
-    # แสดงชื่อหมวดหมู่ที่แกน Y
+    ax.set_xlabel('จำนวนเงิน (บาท)', fontproperties=font_prop)
+    ax.set_ylabel('รายการงบประมาณ', fontproperties=font_prop)
     ax.set_yticks(x)
-    ax.set_yticklabels(df['รายการงบประมาณ'], fontproperties=font_prop, fontsize=14, color="black")
-
-    ax.legend(prop=font_prop, fontsize=12)
-    plt.tight_layout()
+    ax.set_yticklabels(df['รายการงบประมาณ'], fontproperties=font_prop, fontsize=10)
+    ax.set_title('การใช้จ่ายงบประมาณ', fontproperties=font_prop)
+    ax.legend(prop=font_prop)
     st.pyplot(fig)
-
-# ฟังก์ชันจัดแต่งตารางให้สวยงาม
-def style_dataframe(df):
-    # กำหนดการจัดรูปแบบคอลัมน์
-    df_styled = df.style.format({
-        'งบประมาณที่ได้รับ (บาท)': '{:,.2f}',
-        'จำนวนเงินที่ใช้ไปแล้ว (บาท)': '{:,.2f}',
-        'เปอร์เซ็นต์การใช้จ่าย (%)': '{:,.2f}%'
-    })
-
-    # สีพื้นหลังของแถวที่สลับกันเพื่อให้อ่านง่าย
-    df_styled = df_styled.set_table_styles(
-        [{
-            'selector': 'thead th',
-            'props': [('background-color', '#0072B2'), ('color', 'white'), ('font-weight', 'bold')]
-        },
-        {
-            'selector': 'tbody tr:nth-child(odd)',
-            'props': [('background-color', '#f2f2f2')]  # สีพื้นหลังของแถวคี่
-        },
-        {
-            'selector': 'tbody tr:nth-child(even)',
-            'props': [('background-color', '#ffffff')]  # สีพื้นหลังของแถวคู่
-        },
-        {
-            'selector': 'tbody tr:hover',
-            'props': [('background-color', '#d3e0ea')]  # เมื่อเอาเมาส์ไปวางที่แถว
-        },
-        {
-            'selector': 'td',
-            'props': [('text-align', 'center')]  # จัดตำแหน่งตัวเลขให้อยู่กลาง
-        }]
-    )
-
-    return df_styled
-
-# เมนูต่าง ๆ
-page = st.sidebar.radio("เลือกหน้า", ("บันทึกข้อมูล", "ดูกราฟ"))
 
 # โหลดข้อมูล
 df = load_data()
 
-# หน้าบันทึกข้อมูล
+# เมนูหลัก
+page = st.sidebar.radio("เลือกหน้า", ["บันทึกข้อมูล", "ดูกราฟ"])
+
+# หน้า "บันทึกข้อมูล"
 if page == "บันทึกข้อมูล":
-    st.title("บันทึกข้อมูลการใช้จ่ายงบประมาณ")
-    # คำนวณเปอร์เซ็นต์การใช้จ่าย
-    df = calculate_percentage_spent(df)
-    st.dataframe(style_dataframe(df))
-    st.markdown("**บันทึกข้อมูลการใช้จ่ายงบประมาณ**")
-    for idx, row in df.iterrows():
-        df.at[idx, 'จำนวนเงินที่ใช้ไปแล้ว (บาท)'] = st.number_input(
-            f"จำนวนเงินที่ใช้ไปแล้ว ({row['รายการงบประมาณ']})",
-            value=row['จำนวนเงินที่ใช้ไปแล้ว (บาท)'],
+    st.title("บันทึกข้อมูล")
+    for i in range(len(df)):
+        df.at[i, 'จำนวนเงินที่ใช้ไปแล้ว (บาท)'] = st.number_input(
+            f"{df.loc[i, 'รายการงบประมาณ']}",
+            value=float(df.loc[i, 'จำนวนเงินที่ใช้ไปแล้ว (บาท)']),
             min_value=0.0
         )
 
-    # บันทึกข้อมูลเมื่อกดปุ่ม
-    if st.button("บันทึกข้อมูล"):
-        save_data(df)
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("บันทึกข้อมูล"):
+            save_data(df)
+    with col2:
+        if st.button("ล้างข้อมูล"):
+            df['จำนวนเงินที่ใช้ไปแล้ว (บาท)'] = 0.0
+            save_data(df)
+            st.success("ล้างข้อมูลเรียบร้อย!")
 
-# แสดงกราฟเมื่อเลือกหน้า "ดูกราฟ"
+    st.subheader("ข้อมูลปัจจุบัน")
+    st.dataframe(calculate_percentage_spent(df))
+
+# หน้า "ดูกราฟ"
 elif page == "ดูกราฟ":
-    st.title("กราฟการใช้จ่ายงบประมาณ")
+    st.title("ดูกราฟ")
+    df = calculate_percentage_spent(df)
     plot_budget_chart(df)
+
+    st.subheader("ข้อมูลสรุปงบประมาณ")
+    st.dataframe(df)
+
+    st.download_button(
+        label="ดาวน์โหลดข้อมูลเป็น Excel",
+        data=df.to_csv(index=False, encoding='utf-8-sig'),
+        file_name="budget_summary.csv",
+        mime="text/csv"
+    )

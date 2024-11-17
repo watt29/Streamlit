@@ -79,7 +79,7 @@ option = st.selectbox(
 )
 
 # ถ้าเลือกดูกราฟ
-if option == 'ดูกราฟ':
+if option == 'รายงาน':
     index = np.arange(len(df))  # สร้าง index สำหรับการแสดงผลกราฟ
 
     # กราฟแท่ง

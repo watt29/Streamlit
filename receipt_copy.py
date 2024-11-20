@@ -10,7 +10,7 @@ import random
 import io
 
 # Register the THSarabunNew font
-pdfmetrics.registerFont(TTFont('THSarabunNew', 'D:/python/receipt/THSarabunNew.ttf'))
+pdfmetrics.registerFont(TTFont('THSarabunNew', 'https://raw.githubusercontent.com/watt29/Streamlit/main/THSarabunNew.ttf'))
 
 # Function to generate receipt PDF
 def generate_receipt(items, unit_prices, quantities, total_prices, vat_values, total_with_vat, invoice_number, current_date):

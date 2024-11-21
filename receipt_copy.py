@@ -8,36 +8,45 @@ from reportlab.pdfbase import pdfmetrics
 from datetime import datetime
 import random
 import io
+import time
+import string
 
-# Register the THSarabunNew font
+# Register the font
 pdfmetrics.registerFont(TTFont('THSarabunNew', 'https://raw.githubusercontent.com/watt29/Streamlit/main/THSarabunNew.ttf'))
 
 # Function to generate receipt PDF
-def generate_receipt(items, unit_prices, quantities, total_prices, vat_values, total_with_vat, invoice_number, current_date):
-    # Create a BytesIO buffer to save the PDF in memory
+def generate_receipt(items, quantities, prices_per_liter, total_prices_before_vat, vat_values, total_prices_after_vat, grand_total, invoice_number, current_date):
     buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=40, bottomMargin=40)
 
-    # Create the PDF
-    doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=40)
-
-    # Create styles for the text
+    # Styles
     style_normal = ParagraphStyle(
         'normal',
-        fontName='THSarabunNew',
+        fontName='THSarabunNew',  # Use THSarabunNew for all text
         fontSize=12,
         leading=14,
-        alignment=0,  # Align text to the left
+        alignment=0,
     )
 
     style_center = ParagraphStyle(
         'center',
-        fontName='THSarabunNew',
+        fontName='THSarabunNew',  # Use THSarabunNew for all text
         fontSize=12,
         leading=14,
-        alignment=1,  # Center the text
+        alignment=1,
     )
 
-    # Company (Seller) Information
+    # For bold text style (use regular THSarabunNew for bold as well)
+    style_bold_center = ParagraphStyle(
+        'bold_center',
+        fontName='THSarabunNew',  # Use THSarabunNew for bold as well
+        fontSize=14,
+        leading=16,
+        alignment=1,
+        spaceAfter=12,
+    )
+
+    # Company and customer details
     company_info = '''
         <b>ห้างหุ้นส่วนจำกัด ภัณฑิรา ปิโตรเลียม</b><br />
         เลขที่ 70 หมู่ 4 ถนนบางปะหัน-ลพบุรี<br />
@@ -46,22 +55,19 @@ def generate_receipt(items, unit_prices, quantities, total_prices, vat_values, t
         โทรศัพท์: 081-8592375
     '''
 
-    # Customer Information
     customer_info = '''
         <b>ชื่อลูกค้า: สภ.มหาราช</b><br />
         ที่อยู่: เลขที่ 59 หมู่ 2 ต.บ้านใหม่ อ.มหาราช, จ.พระนครศรีอยุธยา<br />
         โทรศัพท์: 035-389-153
     '''
 
-    # Format date
     current_date_str = current_date.strftime('%d/%m/%Y')
 
-    # Creating the table data for the receipt
-    table_data = [["รายการ", "ราคาต่อหน่วย (บาท)", "ปริมาณ (ลิตร)", "มูลค่าสินค้า (บาท)", "ภาษีมูลค่าเพิ่ม (บาท)", "รวมทั้งสิ้น (บาท)"]]  # Header row
+    # Table data for items
+    table_data = [["รายการ", "ปริมาณ (ลิตร)", "ราคาต่อลิตร (บาท)", "ยอดรวมก่อนภาษี (บาท)", "ภาษีมูลค่าเพิ่ม (บาท)", "ยอดรวมทั้งสิ้น (บาท)"]]
     for i in range(len(items)):
-        table_data.append([items[i], f"{unit_prices[i]:.2f}", f"{quantities[i]:.2f}", f"{total_prices[i]:.2f}", f"{vat_values[i]:.2f}", f"{total_with_vat[i]:.2f}"])
+        table_data.append([items[i], f"{quantities[i]:.2f}", f"{prices_per_liter[i]:.2f}", f"{total_prices_before_vat[i]:.2f}", f"{vat_values[i]:.2f}", f"{total_prices_after_vat[i]:.2f}"])
 
-    # Table Style
     table_style = TableStyle([ 
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
         ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
@@ -75,138 +81,106 @@ def generate_receipt(items, unit_prices, quantities, total_prices, vat_values, t
         ('RIGHTPADDING', (0, 0), (-1, -1), 10),
     ])
 
-    # Create elements for the PDF
+    # PDF content
     elements = []
-
-    # Add the Sales Slip Title
-    sales_slip_header = '<b>ใบบันทึกรายการขาย (Sales Slip)</b>'
-    elements.append(Paragraph(sales_slip_header, style_center))
-
-    # Add some space
+    elements.append(Paragraph('<b>ใบบันทึกรายการขาย (sales slip)</b>', style_center))
     elements.append(Spacer(1, 12))
 
-    # Company and Customer Information in 2 Columns
-    data = [
-        [Paragraph(company_info, style_normal), Paragraph(customer_info, style_normal)],
-    ]
+    # Add company and customer information
+    data = [[Paragraph(company_info, style_normal), Paragraph(customer_info, style_normal)]]
     table = Table(data, colWidths=[300, 300])
     table.setStyle([('ALIGN', (0, 0), (-1, -1), 'LEFT'),
                     ('VALIGN', (0, 0), (-1, -1), 'TOP'),
                     ('LEFTPADDING', (0, 0), (0, -1), 50)])
     elements.append(table)
-
-    # Add space
     elements.append(Spacer(1, 24))
 
-    # Invoice Header with Invoice Number and Date
+    # Invoice header
     invoice_header = f'<b>ใบเสร็จเลขที่: {invoice_number}</b> | วันที่: {current_date_str}'
     elements.append(Paragraph(invoice_header, style_center))
-
-    # Add space
     elements.append(Spacer(1, 12))
 
-    # Create the invoice table for the first receipt (top part of the page)
-    invoice_table = Table(table_data)
+    # Add table with items and totals
+    invoice_table = Table(table_data, hAlign="LEFT")
     invoice_table.setStyle(table_style)
     elements.append(invoice_table)
+    elements.append(Spacer(1, 4))
 
-    # Add space after the first receipt
+    # Summary section (with grand total only)
+    summary_data = [
+        ["ยอดรวมทั้งสิ้น (บาท)", f"{grand_total:.2f}"]
+    ]
+    summary_table = Table(summary_data, colWidths=[280, 100])
+    summary_table.setStyle(TableStyle([ 
+        ('ALIGN', (0, 0), (-1, -1), 'RIGHT'),
+        ('TEXTCOLOR', (0, 0), (0, -1), colors.black),
+        ('FONTNAME', (0, 0), (-1, -1), 'THSarabunNew'),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+        ('TOPPADDING', (0, 0), (-1, -1), 0),
+    ]))
+    elements.append(summary_table)
     elements.append(Spacer(1, 24))
 
-    # --- Second Part (Lower part of the page) ---
-    # Add extra space before the second section (to move it further down)
-    elements.append(Spacer(1, 80))  # 48 unit of space (about 2x the default)
-
-    # Add the Sales Slip Title for the second receipt
-    sales_slip_header2 = '<b>ใบบันทึกรายการขาย (Sales Slip)</b>'
-    elements.append(Paragraph(sales_slip_header2, style_center))
-
-    # Add some space
-    elements.append(Spacer(1, 12))
-
-    # Company and Customer Information in 2 Columns
-    table = Table(data, colWidths=[300, 300])
-    table.setStyle([('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                    ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-                    ('LEFTPADDING', (0, 0), (0, -1), 50)])
-    elements.append(table)
-
-    # Add space
-    elements.append(Spacer(1, 24))
-
-    # Invoice Header with Invoice Number and Date for the second receipt
-    invoice_header2 = f'<b>ใบเสร็จเลขที่: {invoice_number}</b> | วันที่: {current_date_str}'
-    elements.append(Paragraph(invoice_header2, style_center))
-
-    # Add space
-    elements.append(Spacer(1, 12))
-
-    # Create the invoice table for the second receipt (bottom part of the page)
-    invoice_table2 = Table(table_data)
-    invoice_table2.setStyle(table_style)
-    elements.append(invoice_table2)
-
-    # Add acknowledgment footer for both receipts
+    # Acknowledgment footer
     acknowledgment_footer = '''
         <b>หมายเหตุ:</b> "ได้รับมอบน้ำมันเชื้อเพลิงตามรายการข้างต้นไว้ครบถ้วนถูกต้องแล้ว"<br />
-        <b>ลงชื่อ..................................</b>
+        <b>ลงชื่อ..............................................................</b><br />
         <b>ผู้จัดซื้อน้้ามันเชื้อเพลิง:</b> (ผู้ขับรถส่วนกลางหรือผู้ที่ได้รับมอบหมาย / คำสั่ง)<br />
         หมายเลขทะเบียน.................................................................    
     '''
-    elements.append(Spacer(1, 24))  # Add space after the second receipt
     elements.append(Paragraph(acknowledgment_footer, style_normal))
-
-    # Build the PDF
     doc.build(elements)
-
-    # Seek to the beginning of the buffer
     buffer.seek(0)
     return buffer
 
 # Streamlit interface
 st.title("สร้างใบเสร็จ (Generate Receipt)")
 
-# Fixed product list
-fixed_items = ["ดีเซล B7", "แก๊สโซฮอล์ 91"]
-unit_prices = []  # Prices will be filled based on user input
+# User inputs for number of items
+item_options = ["ดีเซล B7", "แก๊สโซฮอล์ 91"]
+selected_items = st.multiselect("เลือกสินค้าที่จะเติม", item_options)
+
+# Price per liter input for each selected item
+prices_per_liter = []
 quantities = []
-total_prices = []
-vat_values = []
-total_with_vat = []
 
-# Add the fixed products to the form
-for i, item in enumerate(fixed_items):
-    # Input for price per liter (ราคาต่อลิตร)
-    price_per_liter = st.number_input(f"ราคาต่อลิตรสำหรับ {item} (บาท)", min_value=0.0, format="%.2f")
+for item in selected_items:
+    # ราคาต่อลิตรที่กรอกโดยผู้ใช้
+    price = st.number_input(f"กรอกราคาต่อลิตรสำหรับ {item} (บาท)", min_value=0.0, format="%.2f", key=f"price_{item}")
+    prices_per_liter.append(price)
     
-    # Input for total amount spent (ยอดรวมทั้งสิ้น)
-    total_amount = st.number_input(f"จำนวนเงินที่เติม {item} (บาท)", min_value=0.0, format="%.2f")
+    # กรอกจำนวนเงินที่เติมน้ำมัน รวมภาษีมูลค่าเพิ่ม
+    total_money_with_vat = st.number_input(f"กรอกจำนวนเงินที่เติมสำหรับ {item} (รวมภาษี) (บาท)", min_value=0.0, format="%.2f", key=f"money_with_vat_{item}")
     
-    # Calculate the quantities and VAT values
-    quantity = total_amount / price_per_liter if price_per_liter != 0 else 0
-    vat_value = total_amount * 0.065425
-    total_price = total_amount - vat_value
-    total_with_vat_value = total_amount
+    # คำนวณจำนวนเงินก่อนภาษี (ราคาสินค้า) จากจำนวนเงินรวมภาษี
+    total_money_before_vat = total_money_with_vat / (1 + 0.06525)  # 6.525% VAT
     
-    unit_prices.append(price_per_liter)
+    # คำนวณจำนวนลิตรจากราคาก่อนภาษีและราคาต่อลิตร
+    if price > 0:
+        quantity = total_money_before_vat / price
+    else:
+        quantity = 0.0
     quantities.append(quantity)
-    total_prices.append(total_price)
-    vat_values.append(vat_value)
-    total_with_vat.append(total_with_vat_value)
 
-# Select the invoice date
-selected_date = st.date_input("เลือกวันที่", value=datetime.today())
+# Date input
+current_date = st.date_input("เลือกวันที่สำหรับใบเสร็จ")
 
-# Generate the invoice number
-invoice_number = f"INV-{random.randint(1000, 9999)}"
-
-# Generate the PDF
-pdf_data = generate_receipt(fixed_items, unit_prices, quantities, total_prices, vat_values, total_with_vat, invoice_number, selected_date)
-
-# Provide the download link for the PDF
-st.download_button(
-    label="ดาวน์โหลดใบเสร็จ (Download Receipt)",
-    data=pdf_data,
-    file_name=f"ใบเสร็จ_{invoice_number}.pdf",
-    mime="application/pdf"
-)
+# Generating receipt
+if st.button("สร้างใบเสร็จ"):
+    invoice_number = f"INV-{random.randint(1000, 9999)}"
+    total_prices_before_vat = [quantities[i] * prices_per_liter[i] for i in range(len(selected_items))]
+    vat_values = [total_prices_before_vat[i] * 0.06525 for i in range(len(selected_items))]
+    total_prices_after_vat = [total_prices_before_vat[i] + vat_values[i] for i in range(len(selected_items))]
+    grand_total = sum(total_prices_after_vat)
+    
+    # Generate receipt PDF
+    buffer = generate_receipt(selected_items, quantities, prices_per_liter, total_prices_before_vat, vat_values, total_prices_after_vat, grand_total, invoice_number, current_date)
+    
+    # Create a download button with a unique filename
+    filename = f"receipt_{invoice_number}_{int(time.time())}.pdf"
+    st.download_button(
+        label="ดาวน์โหลดใบเสร็จ",
+        data=buffer,
+        file_name=filename,
+        mime="application/pdf",
+    )

@@ -84,7 +84,7 @@ def generate_receipt(items, quantities, prices_per_liter, total_prices_before_va
     # PDF content
     elements = []
     elements.append(Paragraph('<b>ใบบันทึกรายการขาย (sales slip)</b>', style_center))
-    elements.append(Spacer(1, 12))
+    elements.append(Spacer(1, 20))
 
     # Add company and customer information
     data = [[Paragraph(company_info, style_normal), Paragraph(customer_info, style_normal)]]

@@ -1,5 +1,6 @@
 import streamlit as st
 import csv
+import pandas as pd
 from datetime import datetime
 
 # ฟังก์ชันในการตรวจสอบข้อมูล
@@ -97,19 +98,19 @@ if st.button("บันทึกข้อมูล", use_container_width=True):
 # แสดงข้อมูลที่บันทึกแล้วในรูปแบบตาราง
 st.markdown("### ข้อมูลที่บันทึกไว้:")
 try:
-    with open("form_data.csv", mode="r", encoding="utf-8") as file:
-        csv_data = csv.reader(file)
-        # อ่านข้อมูลจากไฟล์ CSV
-        rows = list(csv_data)
-        if len(rows) > 1:
-            # แสดงข้อมูลในรูปแบบตาราง
-            st.dataframe(rows[1:], columns=rows[0])  # แสดงข้อมูลที่ไม่รวม header
-            # สร้างปุ่มลบแถว
-            delete_rows = st.multiselect("เลือกแถวที่ต้องการลบ", options=range(1, len(rows)), format_func=lambda x: str(rows[x][0]))
-            if st.button("ลบข้อมูลที่เลือก"):
-                delete_data_from_csv(delete_rows)
+    # อ่านข้อมูลจากไฟล์ CSV และแปลงเป็น Pandas DataFrame
+    df = pd.read_csv("form_data.csv")
+    if not df.empty:
+        # แสดงข้อมูลในรูปแบบตาราง
+        st.dataframe(df)
+        # สร้างปุ่มลบแถว
+        delete_rows = st.multiselect("เลือกแถวที่ต้องการลบ", options=range(len(df)), format_func=lambda x: str(df.iloc[x][0]))
+        if st.button("ลบข้อมูลที่เลือก"):
+            delete_data_from_csv(delete_rows)
 except FileNotFoundError:
     st.warning("ยังไม่มีข้อมูลที่บันทึกไว้")
+except pd.errors.EmptyDataError:
+    st.warning("ไฟล์ CSV ว่างเปล่า!")
 
 # ปรับแต่ง CSS ให้เหมาะสมกับมือถือ
 st.markdown("""

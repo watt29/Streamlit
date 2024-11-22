@@ -1,7 +1,6 @@
 import streamlit as st
 import csv
-import requests
-import base64
+import io
 from datetime import datetime
 
 # ฟังก์ชันในการตรวจสอบข้อมูล
@@ -11,57 +10,40 @@ def validate_data(name, id_card, phone_number):
         return False
     return True
 
-# ฟังก์ชันในการบันทึกข้อมูลลงไฟล์ CSV บน GitHub
-def upload_to_github(name, position, room_type, address, relationships, reason, marital_status, children_count, id_card, house_rights, phone_number):
+# ฟังก์ชันในการสร้างไฟล์ CSV ในหน่วยความจำ
+def create_csv(name, position, room_type, address, relationships, reason, marital_status, children_count, id_card, house_rights, phone_number):
     if not validate_data(name, id_card, phone_number):
-        return
+        return None
 
-    # สร้างข้อมูลที่จะบันทึกใน CSV
+    # ข้อมูลที่จะบันทึกใน CSV
     data = [
         ["ชื่อ-นามสกุล", "ตำแหน่ง", "ประเภทที่พักอาศัย", "ที่อยู่", "ความสัมพันธ์ในบ้าน", "เหตุผลการยื่นคำร้อง", "สถานภาพ", "จำนวนบุตร", "หมายเลขบัตรประชาชน", "หมายเลขโทรศัพท์ติดต่อ", "สิทธิในการเบิกค่าบ้าน", "วันที่บันทึก"],
         [name, position, room_type, address, relationships, reason, marital_status, children_count, id_card, phone_number, house_rights, datetime.now().strftime("%Y-%m-%d %H:%M:%S")]
     ]
 
-    # แปลงข้อมูลเป็น CSV string
-    csv_data = "\n".join([",".join(row) for row in data])
+    # สร้างไฟล์ CSV ในหน่วยความจำ
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerows(data)
+    output.seek(0)
+    return output.getvalue()
 
-    # GitHub repository URL และ API endpoint สำหรับบันทึกไฟล์
-    github_repo = "watt29/Streamlit"
-    github_file_path = "form_data.csv"
-    github_api_url = f"https://api.github.com/repos/{github_repo}/contents/{github_file_path}"
-
-    # GitHub Token (ให้เปลี่ยนเป็น token ของคุณ)
-    github_token = "YOUR_GITHUB_TOKEN"
-
-    # การเข้าถึงข้อมูลใน GitHub repository
-    headers = {
-        "Authorization": f"token {github_token}",
-        "Content-Type": "application/json"
-    }
-
-    # อ่านไฟล์ที่มีอยู่ใน GitHub เพื่อตรวจสอบ hash (การอัปเดตไฟล์)
-    response = requests.get(github_api_url, headers=headers)
+# ฟังก์ชันการบันทึกลงไฟล์ CSV
+def save_to_csv(csv_data):
+    file_name = "form_data.csv"
     
-    if response.status_code == 200:
-        file_data = response.json()
-        sha = file_data["sha"]
-    else:
-        sha = None  # หากไฟล์ไม่มีอยู่ จะไม่ใช้ SHA
-
-    # ข้อมูลสำหรับการอัปโหลดไฟล์
-    json_data = {
-        "message": "เพิ่มข้อมูลจากฟอร์ม",
-        "content": base64.b64encode(csv_data.encode()).decode("utf-8"),
-        "sha": sha if sha else ""  # ใช้ SHA หากไฟล์มีอยู่แล้ว
-    }
-
-    # อัปโหลดไฟล์ไปยัง GitHub
-    upload_response = requests.put(github_api_url, headers=headers, json=json_data)
-
-    if upload_response.status_code == 201:
-        st.success("ข้อมูลถูกบันทึกใน GitHub เรียบร้อยแล้ว!")
-    else:
-        st.error(f"เกิดข้อผิดพลาดในการอัปโหลดไฟล์: {upload_response.text}")
+    # ตรวจสอบว่าไฟล์มีอยู่แล้วหรือไม่ และไม่ทับกัน
+    with open(file_name, mode="a", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+        if file.tell() == 0:  # ถ้าไฟล์ว่าง ให้เขียนหัวข้อ
+            writer.writerow([
+                "ชื่อ-นามสกุล", "ตำแหน่ง", "ประเภทที่พักอาศัย", "ที่อยู่", "ความสัมพันธ์ในบ้าน", 
+                "เหตุผลการยื่นคำร้อง", "สถานภาพ", "จำนวนบุตร", "หมายเลขบัตรประชาชน", "หมายเลขโทรศัพท์ติดต่อ",
+                "สิทธิในการเบิกค่าบ้าน", "วันที่บันทึก"
+            ])
+        # เขียนข้อมูลใหม่ลงไป
+        writer.writerows(csv_data)
+    st.success("ข้อมูลถูกบันทึกเรียบร้อยแล้ว!")
 
 # UI ด้วย Streamlit
 st.set_page_config(page_title="บ้านพักของทางราชการ", layout="centered")
@@ -100,10 +82,12 @@ if marital_status in ["สมรส", "หม้าย", "หย่า"]:
 # สิทธิในการเบิกค่าบ้าน
 house_rights = st.selectbox("สิทธิในการเบิกค่าบ้าน:", ["มีสิทธิ", "ไม่มีสิทธิ"])
 
-# บันทึกข้อมูล
+# สร้างและบันทึกไฟล์ CSV
 st.markdown("---")  # เพิ่มเส้นแบ่ง
-if st.button("บันทึกข้อมูล", use_container_width=True):
-    upload_to_github(name, position, room_type, address, ", ".join(relationships), reason, marital_status, children_count, id_card, house_rights, phone_number)
+if st.button("สร้างไฟล์ CSV", use_container_width=True):
+    csv_data = create_csv(name, position, room_type, address, ", ".join(relationships), reason, marital_status, children_count, id_card, house_rights, phone_number)
+    if csv_data:
+        save_to_csv([row.split(',') for row in csv_data.split('\n')])
 
 # ปรับแต่ง CSS ให้เหมาะสมกับมือถือ
 st.markdown("""

@@ -28,23 +28,6 @@ def create_csv(name, position, room_type, address, relationships, reason, marita
     output.seek(0)
     return output.getvalue()
 
-# ฟังก์ชันการบันทึกลงไฟล์ CSV
-def save_to_csv(csv_data):
-    file_name = "form_data.csv"
-    
-    # ตรวจสอบว่าไฟล์มีอยู่แล้วหรือไม่ และไม่ทับกัน
-    with open(file_name, mode="a", newline="", encoding="utf-8") as file:
-        writer = csv.writer(file)
-        if file.tell() == 0:  # ถ้าไฟล์ว่าง ให้เขียนหัวข้อ
-            writer.writerow([
-                "ชื่อ-นามสกุล", "ตำแหน่ง", "ประเภทที่พักอาศัย", "ที่อยู่", "ความสัมพันธ์ในบ้าน", 
-                "เหตุผลการยื่นคำร้อง", "สถานภาพ", "จำนวนบุตร", "หมายเลขบัตรประชาชน", "หมายเลขโทรศัพท์ติดต่อ",
-                "สิทธิในการเบิกค่าบ้าน", "วันที่บันทึก"
-            ])
-        # เขียนข้อมูลใหม่ลงไป
-        writer.writerows(csv_data)
-    st.success("ข้อมูลถูกบันทึกเรียบร้อยแล้ว!")
-
 # UI ด้วย Streamlit
 st.set_page_config(page_title="บ้านพักของทางราชการ", layout="centered")
 
@@ -82,12 +65,18 @@ if marital_status in ["สมรส", "หม้าย", "หย่า"]:
 # สิทธิในการเบิกค่าบ้าน
 house_rights = st.selectbox("สิทธิในการเบิกค่าบ้าน:", ["มีสิทธิ", "ไม่มีสิทธิ"])
 
-# สร้างและบันทึกไฟล์ CSV
+# สร้างไฟล์ CSV และให้ดาวน์โหลด
 st.markdown("---")  # เพิ่มเส้นแบ่ง
 if st.button("สร้างไฟล์ CSV", use_container_width=True):
     csv_data = create_csv(name, position, room_type, address, ", ".join(relationships), reason, marital_status, children_count, id_card, house_rights, phone_number)
     if csv_data:
-        save_to_csv([row.split(',') for row in csv_data.split('\n')])
+        # ใช้ st.download_button เพื่อให้ผู้ใช้ดาวน์โหลดไฟล์ CSV
+        st.download_button(
+            label="ดาวน์โหลดไฟล์ CSV", 
+            data=csv_data, 
+            file_name="form_data.csv", 
+            mime="text/csv"
+        )
 
 # ปรับแต่ง CSS ให้เหมาะสมกับมือถือ
 st.markdown("""

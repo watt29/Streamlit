@@ -67,7 +67,8 @@ def authenticate_password():
 st.set_page_config(page_title="บ้านพักของทางราชการ", layout="centered")
 
 # เพิ่ม header และคำแนะนำ
-st.title("ฟอร์มสำรวจข้าราชการที่เข้าพักอาศัยในที่พักของทางราชการ")
+# ใช้ st.markdown และกำหนดขนาดข้อความด้วย HTML
+st.markdown("<h2 style='font-size: 20px;'>ฟอร์มสำรวจข้าราชการที่เข้าพักอาศัยในที่พักของทางราชการ</h2>", unsafe_allow_html=True)
 st.markdown("กรุณากรอกข้อมูลในฟอร์มด้านล่างนี้")
 
 # ข้อมูลส่วนตัว

@@ -1,6 +1,5 @@
 import streamlit as st
 import csv
-import io
 from datetime import datetime
 
 # ฟังก์ชันในการตรวจสอบข้อมูล
@@ -28,6 +27,30 @@ def save_data_to_csv(name, position, room_type, address, relationships, reason, 
             datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         ])
     st.success("ข้อมูลถูกบันทึกเรียบร้อยแล้ว!")
+
+# ฟังก์ชันในการลบข้อมูลจากไฟล์ CSV
+def delete_data_from_csv(delete_rows):
+    try:
+        # อ่านข้อมูลเดิมจากไฟล์ CSV
+        with open("form_data.csv", mode="r", encoding="utf-8") as file:
+            rows = list(csv.reader(file))
+
+        # ตรวจสอบว่ามีข้อมูลหรือไม่
+        if len(rows) <= 1:
+            st.warning("ไม่มีข้อมูลในไฟล์เพื่อให้ลบ")
+            return
+
+        # ลบแถวที่เลือก
+        new_rows = [row for index, row in enumerate(rows) if index not in delete_rows]
+
+        # เขียนข้อมูลใหม่กลับไปที่ไฟล์
+        with open("form_data.csv", mode="w", newline="", encoding="utf-8") as file:
+            writer = csv.writer(file)
+            writer.writerows(new_rows)
+        
+        st.success("ข้อมูลที่เลือกถูกลบออกจากไฟล์เรียบร้อยแล้ว!")
+    except FileNotFoundError:
+        st.warning("ไม่พบไฟล์ข้อมูลเพื่อทำการลบ")
 
 # UI ด้วย Streamlit
 st.set_page_config(page_title="บ้านพักของทางราชการ", layout="centered")
@@ -71,7 +94,7 @@ st.markdown("---")  # เพิ่มเส้นแบ่ง
 if st.button("บันทึกข้อมูล", use_container_width=True):
     save_data_to_csv(name, position, room_type, address, ", ".join(relationships), reason, marital_status, children_count, id_card, house_rights, phone_number)
 
-# แสดงข้อมูลที่บันทึกแล้ว (สามารถแสดงข้อมูลจากไฟล์ CSV)
+# แสดงข้อมูลที่บันทึกแล้วในรูปแบบตาราง
 st.markdown("### ข้อมูลที่บันทึกไว้:")
 try:
     with open("form_data.csv", mode="r", encoding="utf-8") as file:
@@ -79,7 +102,12 @@ try:
         # อ่านข้อมูลจากไฟล์ CSV
         rows = list(csv_data)
         if len(rows) > 1:
-            st.write(rows[1:])  # แสดงข้อมูลที่ไม่รวม header
+            # แสดงข้อมูลในรูปแบบตาราง
+            st.dataframe(rows[1:], columns=rows[0])  # แสดงข้อมูลที่ไม่รวม header
+            # สร้างปุ่มลบแถว
+            delete_rows = st.multiselect("เลือกแถวที่ต้องการลบ", options=range(1, len(rows)), format_func=lambda x: str(rows[x][0]))
+            if st.button("ลบข้อมูลที่เลือก"):
+                delete_data_from_csv(delete_rows)
 except FileNotFoundError:
     st.warning("ยังไม่มีข้อมูลที่บันทึกไว้")
 

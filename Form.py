@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 import csv
 from datetime import datetime
 
@@ -113,20 +114,19 @@ try:
     
     # ตรวจสอบว่า rows มีข้อมูลหรือไม่
     if rows:
-        st.write("ข้อมูลที่ถูกโหลดมา:")  # แสดงข้อมูลที่โหลดมา
-        st.write(rows)  # แสดงข้อมูล raw
+        # แปลงข้อมูลเป็น DataFrame
+        df = pd.DataFrame(rows[1:], columns=rows[0])
+        st.dataframe(df)  # แสดงข้อมูลในรูปแบบตาราง
         
-        if len(rows) > 1:
-            st.dataframe(rows[1:], columns=rows[0])  # แสดงข้อมูลที่ไม่รวม header
-            # ตัวเลือกในการลบข้อมูล
-            delete_rows = st.multiselect("เลือกแถวที่ต้องการลบ", options=range(1, len(rows)), format_func=lambda x: str(rows[x][0]))
-            
-            # เมื่อผู้ใช้ต้องการลบข้อมูล
-            if st.button("ลบข้อมูลที่เลือก"):
-                if authenticate_password():  # ตรวจสอบรหัสผ่าน
-                    delete_data_from_csv(delete_rows)
-                else:
-                    st.warning("รหัสผ่านไม่ถูกต้อง!")
+        # ตัวเลือกในการลบข้อมูล
+        delete_rows = st.multiselect("เลือกแถวที่ต้องการลบ", options=range(1, len(rows)), format_func=lambda x: str(rows[x][0]))
+        
+        # เมื่อผู้ใช้ต้องการลบข้อมูล
+        if st.button("ลบข้อมูลที่เลือก"):
+            if authenticate_password():  # ตรวจสอบรหัสผ่าน
+                delete_data_from_csv(delete_rows)
+            else:
+                st.warning("รหัสผ่านไม่ถูกต้อง!")
     else:
         st.warning("ไม่มีข้อมูลในไฟล์.")
 except FileNotFoundError:
@@ -148,15 +148,7 @@ st.markdown("""
     .stButton>button:hover {
         background-color: #45a049;
     }
-    .stTextArea>textarea {
-        font-size: 16px;
-        padding: 12px;
-    }
-    .stSelectbox select {
-        font-size: 16px;
-        padding: 12px;
-    }
-    .stTextInput input {
+    .stTextArea>textarea, .stTextInput>input, .stSelectbox select {
         font-size: 16px;
         padding: 12px;
     }

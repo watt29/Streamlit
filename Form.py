@@ -10,23 +10,24 @@ def validate_data(name, id_card, phone_number):
         return False
     return True
 
-# ฟังก์ชันในการสร้างไฟล์ CSV ในหน่วยความจำ
-def create_csv(name, position, room_type, address, relationships, reason, marital_status, children_count, id_card, house_rights, phone_number):
+# ฟังก์ชันในการบันทึกข้อมูลลงไฟล์ CSV
+def save_data_to_csv(name, position, room_type, address, relationships, reason, marital_status, children_count, id_card, house_rights, phone_number):
     if not validate_data(name, id_card, phone_number):
-        return None
+        return
 
-    # ข้อมูลที่จะบันทึกใน CSV
-    data = [
-        ["ชื่อ-นามสกุล", "ตำแหน่ง", "ประเภทที่พักอาศัย", "ที่อยู่", "ความสัมพันธ์ในบ้าน", "เหตุผลการยื่นคำร้อง", "สถานภาพ", "จำนวนบุตร", "หมายเลขบัตรประชาชน", "หมายเลขโทรศัพท์ติดต่อ", "สิทธิในการเบิกค่าบ้าน", "วันที่บันทึก"],
-        [name, position, room_type, address, relationships, reason, marital_status, children_count, id_card, phone_number, house_rights, datetime.now().strftime("%Y-%m-%d %H:%M:%S")]
-    ]
-
-    # สร้างไฟล์ CSV ในหน่วยความจำ
-    output = io.StringIO()
-    writer = csv.writer(output)
-    writer.writerows(data)
-    output.seek(0)
-    return output.getvalue()
+    # บันทึกข้อมูลลงในไฟล์ CSV
+    with open("form_data.csv", mode="a", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+        if file.tell() == 0:  # ตรวจสอบว่าไฟล์ว่างหรือไม่
+            writer.writerow([
+                "ชื่อ-นามสกุล", "ตำแหน่ง", "ประเภทที่พักอาศัย", "ที่อยู่", "ความสัมพันธ์ในบ้าน", "เหตุผลการยื่นคำร้อง", 
+                "สถานภาพ", "จำนวนบุตร", "หมายเลขบัตรประชาชน", "หมายเลขโทรศัพท์ติดต่อ", "สิทธิในการเบิกค่าบ้าน", "วันที่บันทึก"
+            ])
+        writer.writerow([
+            name, position, room_type, address, relationships, reason, marital_status, children_count, id_card, phone_number, house_rights, 
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        ])
+    st.success("ข้อมูลถูกบันทึกเรียบร้อยแล้ว!")
 
 # UI ด้วย Streamlit
 st.set_page_config(page_title="บ้านพักของทางราชการ", layout="centered")
@@ -65,18 +66,22 @@ if marital_status in ["สมรส", "หม้าย", "หย่า"]:
 # สิทธิในการเบิกค่าบ้าน
 house_rights = st.selectbox("สิทธิในการเบิกค่าบ้าน:", ["มีสิทธิ", "ไม่มีสิทธิ"])
 
-# สร้างไฟล์ CSV และให้ดาวน์โหลด
+# บันทึกข้อมูลลงไฟล์ CSV
 st.markdown("---")  # เพิ่มเส้นแบ่ง
-if st.button("สร้างไฟล์ CSV", use_container_width=True):
-    csv_data = create_csv(name, position, room_type, address, ", ".join(relationships), reason, marital_status, children_count, id_card, house_rights, phone_number)
-    if csv_data:
-        # ใช้ st.download_button เพื่อให้ผู้ใช้ดาวน์โหลดไฟล์ CSV
-        st.download_button(
-            label="ดาวน์โหลดไฟล์ CSV", 
-            data=csv_data, 
-            file_name="form_data.csv", 
-            mime="text/csv"
-        )
+if st.button("บันทึกข้อมูล", use_container_width=True):
+    save_data_to_csv(name, position, room_type, address, ", ".join(relationships), reason, marital_status, children_count, id_card, house_rights, phone_number)
+
+# แสดงข้อมูลที่บันทึกแล้ว (สามารถแสดงข้อมูลจากไฟล์ CSV)
+st.markdown("### ข้อมูลที่บันทึกไว้:")
+try:
+    with open("form_data.csv", mode="r", encoding="utf-8") as file:
+        csv_data = csv.reader(file)
+        # อ่านข้อมูลจากไฟล์ CSV
+        rows = list(csv_data)
+        if len(rows) > 1:
+            st.write(rows[1:])  # แสดงข้อมูลที่ไม่รวม header
+except FileNotFoundError:
+    st.warning("ยังไม่มีข้อมูลที่บันทึกไว้")
 
 # ปรับแต่ง CSS ให้เหมาะสมกับมือถือ
 st.markdown("""

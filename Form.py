@@ -55,7 +55,7 @@ def delete_data_from_csv(delete_rows):
 # ฟังก์ชันตรวจสอบรหัสผ่าน
 def authenticate_password():
     # รหัสผ่านที่กำหนดให้ผู้ใช้กรอก
-    correct_password = "admin1234"  # คุณสามารถเปลี่ยนรหัสผ่านได้ตามต้องการ
+    correct_password = "1234"  # คุณสามารถเปลี่ยนรหัสผ่านนี้ได้ตามต้องการ
     password = st.text_input("กรุณากรอกรหัสผ่านเพื่อยืนยันการลบข้อมูล:", type="password")
     if password == correct_password:
         return True
@@ -111,17 +111,24 @@ try:
     with open("form_data.csv", mode="r", encoding="utf-8") as file:
         rows = list(csv.reader(file))
     
-    if len(rows) > 1:
-        st.dataframe(rows[1:], columns=rows[0])  # แสดงข้อมูลที่ไม่รวม header
-        # ตัวเลือกในการลบข้อมูล
-        delete_rows = st.multiselect("เลือกแถวที่ต้องการลบ", options=range(1, len(rows)), format_func=lambda x: str(rows[x][0]))
+    # ตรวจสอบว่า rows มีข้อมูลหรือไม่
+    if rows:
+        st.write("ข้อมูลที่ถูกโหลดมา:")  # แสดงข้อมูลที่โหลดมา
+        st.write(rows)  # แสดงข้อมูล raw
         
-        # เมื่อผู้ใช้ต้องการลบข้อมูล
-        if st.button("ลบข้อมูลที่เลือก"):
-            if authenticate_password():  # ตรวจสอบรหัสผ่าน
-                delete_data_from_csv(delete_rows)
-            else:
-                st.warning("รหัสผ่านไม่ถูกต้อง!")
+        if len(rows) > 1:
+            st.dataframe(rows[1:], columns=rows[0])  # แสดงข้อมูลที่ไม่รวม header
+            # ตัวเลือกในการลบข้อมูล
+            delete_rows = st.multiselect("เลือกแถวที่ต้องการลบ", options=range(1, len(rows)), format_func=lambda x: str(rows[x][0]))
+            
+            # เมื่อผู้ใช้ต้องการลบข้อมูล
+            if st.button("ลบข้อมูลที่เลือก"):
+                if authenticate_password():  # ตรวจสอบรหัสผ่าน
+                    delete_data_from_csv(delete_rows)
+                else:
+                    st.warning("รหัสผ่านไม่ถูกต้อง!")
+    else:
+        st.warning("ไม่มีข้อมูลในไฟล์.")
 except FileNotFoundError:
     st.warning("ไม่พบไฟล์ข้อมูลเพื่อแสดงผล")
 
@@ -154,9 +161,4 @@ st.markdown("""
         padding: 12px;
     }
     </style>
-""", unsafe_allow_html=True)
-
-# ข้อความแนะนำ
-st.markdown("""
-    <p style="color: #4CAF50; font-size: 16px;">โปรดกรอกข้อมูลให้ครบถ้วนและตรวจสอบก่อนบันทึก!</p>
 """, unsafe_allow_html=True)

@@ -1,6 +1,5 @@
 import streamlit as st
 import csv
-import pandas as pd
 from datetime import datetime
 
 # ฟังก์ชันในการตรวจสอบข้อมูล
@@ -53,6 +52,16 @@ def delete_data_from_csv(delete_rows):
     except FileNotFoundError:
         st.warning("ไม่พบไฟล์ข้อมูลเพื่อทำการลบ")
 
+# ฟังก์ชันตรวจสอบรหัสผ่าน
+def authenticate_password():
+    # รหัสผ่านที่กำหนดให้ผู้ใช้กรอก
+    correct_password = "admin1234"  # คุณสามารถเปลี่ยนรหัสผ่านได้ตามต้องการ
+    password = st.text_input("กรุณากรอกรหัสผ่านเพื่อยืนยันการลบข้อมูล:", type="password")
+    if password == correct_password:
+        return True
+    else:
+        return False
+
 # UI ด้วย Streamlit
 st.set_page_config(page_title="บ้านพักของทางราชการ", layout="centered")
 
@@ -95,24 +104,28 @@ st.markdown("---")  # เพิ่มเส้นแบ่ง
 if st.button("บันทึกข้อมูล", use_container_width=True):
     save_data_to_csv(name, position, room_type, address, ", ".join(relationships), reason, marital_status, children_count, id_card, house_rights, phone_number)
 
-# แสดงข้อมูลที่บันทึกแล้วในรูปแบบตาราง
+# การแสดงข้อมูลที่บันทึกแล้ว
 st.markdown("### ข้อมูลที่บันทึกไว้:")
 try:
-    # อ่านข้อมูลจากไฟล์ CSV และแปลงเป็น Pandas DataFrame
-    df = pd.read_csv("form_data.csv")
-    if not df.empty:
-        # แสดงข้อมูลในรูปแบบตาราง
-        st.dataframe(df)
-        # สร้างปุ่มลบแถว
-        delete_rows = st.multiselect("เลือกแถวที่ต้องการลบ", options=range(len(df)), format_func=lambda x: str(df.iloc[x][0]))
+    # อ่านข้อมูลจากไฟล์ CSV
+    with open("form_data.csv", mode="r", encoding="utf-8") as file:
+        rows = list(csv.reader(file))
+    
+    if len(rows) > 1:
+        st.dataframe(rows[1:], columns=rows[0])  # แสดงข้อมูลที่ไม่รวม header
+        # ตัวเลือกในการลบข้อมูล
+        delete_rows = st.multiselect("เลือกแถวที่ต้องการลบ", options=range(1, len(rows)), format_func=lambda x: str(rows[x][0]))
+        
+        # เมื่อผู้ใช้ต้องการลบข้อมูล
         if st.button("ลบข้อมูลที่เลือก"):
-            delete_data_from_csv(delete_rows)
+            if authenticate_password():  # ตรวจสอบรหัสผ่าน
+                delete_data_from_csv(delete_rows)
+            else:
+                st.warning("รหัสผ่านไม่ถูกต้อง!")
 except FileNotFoundError:
-    st.warning("ยังไม่มีข้อมูลที่บันทึกไว้")
-except pd.errors.EmptyDataError:
-    st.warning("ไฟล์ CSV ว่างเปล่า!")
+    st.warning("ไม่พบไฟล์ข้อมูลเพื่อแสดงผล")
 
-# ปรับแต่ง CSS ให้เหมาะสมกับมือถือ
+# การปรับแต่ง CSS ให้เหมาะสมกับมือถือ
 st.markdown("""
     <style>
     .stButton>button {

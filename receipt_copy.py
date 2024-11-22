@@ -9,7 +9,6 @@ from datetime import datetime
 import random
 import io
 import time
-import string
 
 # Register the font
 pdfmetrics.registerFont(TTFont('THSarabunNew', 'https://raw.githubusercontent.com/watt29/Streamlit/main/THSarabunNew.ttf'))
@@ -165,22 +164,32 @@ for item in selected_items:
 # Date input
 current_date = st.date_input("เลือกวันที่สำหรับใบเสร็จ")
 
+# Input for invoice number (only the 4 digits after "INV-")
+invoice_number = st.text_input("กรอกเลขใบเสร็จ (เลข 4 หลัก)", max_chars=4)
+
+# Ensure the invoice number is valid
+if invoice_number and not invoice_number.isdigit():
+    st.error("กรุณากรอกเลขใบเสร็จเป็นตัวเลขเท่านั้น")
+
 # Generating receipt
 if st.button("สร้างใบเสร็จ"):
-    invoice_number = f"INV-{random.randint(1000, 9999)}"
-    total_prices_before_vat = [quantities[i] * prices_per_liter[i] for i in range(len(selected_items))]
-    vat_values = [total_prices_before_vat[i] * 0.06525 for i in range(len(selected_items))]
-    total_prices_after_vat = [total_prices_before_vat[i] + vat_values[i] for i in range(len(selected_items))]
-    grand_total = sum(total_prices_after_vat)
-    
-    # Generate receipt PDF
-    buffer = generate_receipt(selected_items, quantities, prices_per_liter, total_prices_before_vat, vat_values, total_prices_after_vat, grand_total, invoice_number, current_date)
-    
-    # Create a download button with a unique filename
-    filename = f"receipt_{invoice_number}_{int(time.time())}.pdf"
-    st.download_button(
-        label="ดาวน์โหลดใบเสร็จ",
-        data=buffer,
-        file_name=filename,
-        mime="application/pdf",
-    )
+    if invoice_number and len(invoice_number) == 4:
+        full_invoice_number = f"INV-{invoice_number}"
+        total_prices_before_vat = [quantities[i] * prices_per_liter[i] for i in range(len(selected_items))]
+        vat_values = [total_prices_before_vat[i] * 0.06525 for i in range(len(selected_items))]
+        total_prices_after_vat = [total_prices_before_vat[i] + vat_values[i] for i in range(len(selected_items))]
+        grand_total = sum(total_prices_after_vat)
+        
+        # Generate receipt PDF
+        buffer = generate_receipt(selected_items, quantities, prices_per_liter, total_prices_before_vat, vat_values, total_prices_after_vat, grand_total, full_invoice_number, current_date)
+        
+        # Create a download button with a unique filename
+        filename = f"receipt_{full_invoice_number}_{int(time.time())}.pdf"
+        st.download_button(
+            label="ดาวน์โหลดใบเสร็จ",
+            data=buffer,
+            file_name=filename,
+            mime="application/pdf",
+        )
+    else:
+        st.error("กรุณากรอกเลขใบเสร็จ 4 หลักที่ถูกต้อง")

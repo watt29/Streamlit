@@ -83,14 +83,14 @@ position = st.selectbox("ตำแหน่ง:", [
 room_type = st.selectbox("ประเภทที่พักอาศัย:", ["บ้านพักอิสระ"])
 
 # เพิ่มฟิลด์ที่อยู่ในฟิลด์เดียว
-address = st.text_area("กรอกที่อยู่ (บ้านเลขที่, หมู่/ซอย, ถนน, ตำบล/แขวง, อำเภอ/เขต, จังหวัด):", height=150)
+address = st.text_area("กรอกที่อยู่บ้านพักทางราชการ (บ้านเลขที่, หมู่/ซอย, ถนน, ตำบล/แขวง, อำเภอ/เขต, จังหวัด):", height=150)
 
 # ความสัมพันธ์ในบ้าน
 relationship_choices = ["บิดา", "มารดา", "บุตร", "พี่/น้อง", "บิดามารดา", "คนเดียว", "คู่สมรส"]
-relationships = st.multiselect("เลือกความสัมพันธ์ในบ้าน:", relationship_choices)
+relationships = st.multiselect("พักอาศัยกับ:", relationship_choices)
 
 # เหตุผลการยื่นคำร้อง
-reason = st.text_area("เหตุผลการยื่นคำร้อง:")
+reason = st.text_area("เหตุผลการยื่นคำร้อง:เช่น ไม่มีที่พักอาศัย")
 
 # ข้อมูลสถานภาพสมรส
 marital_status = st.selectbox("สถานภาพ:", ["โสด", "สมรส", "หย่า"])

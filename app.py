@@ -3,14 +3,14 @@ import gspread
 from google.oauth2.service_account import Credentials
 import os
 
-# ระบุไฟล์ credentials (ไฟล์ Service Account ที่คุณดาวน์โหลด)
-cred_file_path = r"D:\rescue\maharat-be0ae-f63b0350b7e1.json"
+# Fetch credentials from Streamlit's secrets management (for cloud deployment)
+cred_file_path = st.secrets["gspread_credentials"]
 
 # กำหนดสิทธิ์ในการเข้าถึง (scopes)
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
 # เชื่อมต่อกับ Google API โดยใช้ไฟล์ credentials
-creds = Credentials.from_service_account_file(cred_file_path, scopes=scope)
+creds = Credentials.from_service_account_info(st.secrets["gspread_credentials"], scopes=scope)
 client = gspread.authorize(creds)
 
 # เชื่อมต่อกับ Google Sheet

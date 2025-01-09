@@ -31,5 +31,5 @@ for i in range(len(data['Location Name'])):
     ).add_to(m)
 
 # แสดงแผนที่ใน Streamlit
-st.title("แผนที่เหตุการณ์อาชญากรรมในอำเภอมหาราช")
+st.title("แผนที่เหตุการณ์อาชญากรรม")
 st_folium(m, width=700)

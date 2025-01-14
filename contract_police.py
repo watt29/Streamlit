@@ -66,7 +66,7 @@ def highlight_search_results(row, search_term):
     return ['background-color: yellow' if search_term.lower() in str(val).lower() else '' for val in row]
 
 # สร้าง UI ด้วย Streamlit
-st.title("ข้อมูลจาก Notion Database")
+st.title("เบอร์โทรข้าราชตำรวจ")
 st.write("แสดงข้อมูลจากฐานข้อมูล Notion พร้อมฟังก์ชันการค้นหา")
 
 # ดึงข้อมูลจาก Notion API

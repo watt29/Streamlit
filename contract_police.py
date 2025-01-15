@@ -63,44 +63,82 @@ def convert_to_dataframe(data):
 
 # ฟังก์ชันเพื่อเน้นแถวที่ตรงกับคำค้นหา
 def highlight_search_results(row, search_term):
-    return ['background-color: yellow' if search_term.lower() in str(val).lower() else '' for val in row]
+    return ['background-color: #ffeb3b' if search_term.lower() in str(val).lower() else '' for val in row]
 
 # ปรับแต่งธีม Streamlit สำหรับมือถือ
 st.markdown(
     """
     <style>
+        /* Body Styling */
         body {
-            font-size: 14px;  /* ขนาดตัวอักษร */
-            line-height: 1.4;
+            font-size: 14px;  
+            line-height: 1.6;
+            background-color: #f5f5f5;
+            color: #333;
         }
 
-        h1, h2, h3, h4, h5, h6 {
-            font-size: 16px;
+        /* Header */
+        h1 {
+            font-size: 26px;
+            color: #4CAF50;
+            font-weight: bold;
+            text-align: center;
         }
 
+        h2 {
+            font-size: 18px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        /* Button */
         .stButton>button {
-            font-size: 12px;
-            padding: 8px 16px;
+            font-size: 14px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
         }
 
-        .dataframe {
-            font-size: 12px;
-            max-width: 100%;
+        .stButton>button:hover {
+            background-color: #45a049;
+        }
+
+        /* Input Fields */
+        .stTextInput>div>input {
+            font-size: 14px;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            background-color: #fff;
+        }
+
+        /* DataTable Styling */
+        .stDataFrame {
+            border-radius: 6px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             overflow-x: auto;
         }
 
-        .stTextInput>div>input {
-            font-size: 12px;
-            padding: 8px;
+        /* Table Styling */
+        .dataframe {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .stDataFrame th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .stDataFrame tr:hover {
+            background-color: #f1f1f1;
         }
 
         .stTextInput {
             width: 100%;
-        }
-
-        /* ปรับแต่งขนาดของตาราง */
-        .stDataFrame {
-            font-size: 12px;
         }
     </style>
     """,

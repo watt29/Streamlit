@@ -65,15 +65,7 @@ def convert_to_dataframe(data):
 def highlight_search_results(row, search_term):
     return ['background-color: yellow' if search_term.lower() in str(val).lower() else '' for val in row]
 
-# ปรับแต่งธีม Streamlit
-st.set_page_config(
-    page_title="Database",
-    page_icon="📊",
-    layout="centered",  # ใช้ layout แบบจัดกลางหน้าจอ
-    initial_sidebar_state="collapsed"  # ซ่อน Sidebar สำหรับมือถือ
-)
-
-# เพิ่ม CSS ปรับขนาดเนื้อหาทั้งหมดให้เล็กลง
+# ปรับแต่งธีม Streamlit สำหรับมือถือ
 st.markdown(
     """
     <style>
@@ -83,7 +75,7 @@ st.markdown(
         }
 
         h1, h2, h3, h4, h5, h6 {
-            font-size: 18px;
+            font-size: 16px;
         }
 
         .stButton>button {
@@ -93,9 +85,21 @@ st.markdown(
 
         .dataframe {
             font-size: 12px;
+            max-width: 100%;
+            overflow-x: auto;
         }
 
         .stTextInput>div>input {
+            font-size: 12px;
+            padding: 8px;
+        }
+
+        .stTextInput {
+            width: 100%;
+        }
+
+        /* ปรับแต่งขนาดของตาราง */
+        .stDataFrame {
             font-size: 12px;
         }
     </style>

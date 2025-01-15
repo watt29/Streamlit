@@ -58,7 +58,7 @@ def convert_to_dataframe(data):
             st.warning(f"ข้อมูลบางอย่างขาดหายไป: {e}")
     
     # สร้าง DataFrame จากรายการที่ได้
-    df = pd.DataFrame(rows, columns=["ชื่อ", "ตำแหน่ง", "เบอร์โทรศัพท์", "ที่ทำงาน"])
+    df = pd.DataFrame(rows, columns=["ชื่อ", "เบอร์โทรศัพท์","ตำแหน่ง" "ที่ทำงาน"])
     return df
 
 # ฟังก์ชันเพื่อเน้นแถวที่ตรงกับคำค้นหา

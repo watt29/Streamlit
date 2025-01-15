@@ -53,12 +53,12 @@ def convert_to_dataframe(data):
             position = result['properties']['ตำแหน่ง']['rich_text'][0]['text']['content']
             phone = result['properties'].get('เบอร์โทรศัพท์', {}).get('phone_number', 'ไม่มีข้อมูลเบอร์โทรศัพท์')
             workplace = result['properties'].get('ที่ทำงาน', {}).get('rich_text', [{}])[0].get('text', {}).get('content', 'ไม่มีข้อมูลที่ทำงาน')
-            rows.append([name, position, phone, workplace])
+            rows.append([name, phone, position, workplace])
         except KeyError as e:
             st.warning(f"ข้อมูลบางอย่างขาดหายไป: {e}")
     
     # สร้าง DataFrame จากรายการที่ได้
-    df = pd.DataFrame(rows, columns=["ชื่อ", "เบอร์โทรศัพท์","ตำแหน่ง" "ที่ทำงาน"])
+    df = pd.DataFrame(rows, columns=["ชื่อ", "เบอร์โทรศัพท์", "ตำแหน่ง", "ที่ทำงาน"])
     return df
 
 # ฟังก์ชันเพื่อเน้นแถวที่ตรงกับคำค้นหา

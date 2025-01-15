@@ -9,93 +9,64 @@ DATABASE_ID = "1784dda124a080e5acfaf1eec21a66c6"
 # URL สำหรับเรียก Notion API
 url = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
 
-# Headers ที่ต้องการ
+# ตั้งค่า headers สำหรับการขอข้อมูลจาก Notion API
 headers = {
     "Authorization": f"Bearer {NOTION_TOKEN}",
-    "Notion-Version": "2021-05-13",  # ใช้เวอร์ชันล่าสุดที่รองรับ
     "Content-Type": "application/json",
+    "Notion-Version": "2021-05-13"  # กำหนดเวอร์ชัน API ที่ใช้
 }
 
-# ฟังก์ชันเพื่อดึงข้อมูลจาก Notion API พร้อมการทำ Pagination
-def fetch_notion_data():
-    all_data = []  # ใช้เก็บข้อมูลทั้งหมด
-    next_cursor = None  # เริ่มต้นไม่มี cursor
-    
-    while True:
-        # ถ้ามี cursor ในคำขอก่อนหน้านี้ ให้ใช้มัน
-        payload = {}
-        if next_cursor:
-            payload['start_cursor'] = next_cursor  # ใช้ cursor ถ้ามี
+# ทำการขอข้อมูลจาก Notion API
+response = requests.post(url, headers=headers)
 
-        # ส่งคำขอไปที่ Notion API
-        response = requests.post(url, headers=headers, json=payload)
-        
-        if response.status_code == 200:
-            data = response.json()
-            all_data.extend(data['results'])  # รวมข้อมูลจากชุดนี้
-            
-            # ตรวจสอบว่ามี next_cursor หรือไม่
-            next_cursor = data.get('next_cursor')  # เอาค่า cursor ถ้ามี
-            if not next_cursor:
-                break  # ถ้าไม่มี next_cursor แสดงว่าได้ข้อมูลทั้งหมดแล้ว
-        else:
-            st.error(f"ไม่สามารถดึงข้อมูลได้, สถานะ: {response.status_code}")
-            break
+# ตรวจสอบว่าได้ผลลัพธ์สำเร็จหรือไม่
+if response.status_code == 200:
+    data = response.json()
     
-    return all_data
-
-# ฟังก์ชันแปลงข้อมูลที่ได้จาก Notion ให้เป็น DataFrame ของ Pandas
-def convert_to_dataframe(data):
+    # สร้าง DataFrame จากข้อมูลที่ได้
     rows = []
-    for result in data:
-        try:
-            name = result['properties']['ชื่อ']['title'][0]['text']['content']
-            position = result['properties']['ตำแหน่ง']['rich_text'][0]['text']['content']
-            phone = result['properties'].get('เบอร์โทรศัพท์', {}).get('phone_number', 'ไม่มีข้อมูลเบอร์โทรศัพท์')
-            workplace = result['properties'].get('ที่ทำงาน', {}).get('rich_text', [{}])[0].get('text', {}).get('content', 'ไม่มีข้อมูลที่ทำงาน')
+    for result in data.get("results", []):
+        row = {}
+        for property_name, property_data in result["properties"].items():
+            # ตรวจสอบว่าเป็น "title" หรือไม่
+            row[property_name] = property_data.get("title", [{"text": {"content": ""}}])[0]["text"]["content"]
+        rows.append(row)
 
-            # สร้างลิงก์โทรศัพท์ในกรณีที่มีเบอร์โทรศัพท์
-            if phone != 'ไม่มีข้อมูลเบอร์โทรศัพท์':
-                phone = f"[{phone}](tel:{phone})"
-            
-            rows.append([name, position, phone, workplace])
-        except KeyError as e:
-            st.warning(f"ข้อมูลบางอย่างขาดหายไป: {e}")
-    
-    # สร้าง DataFrame จากรายการที่ได้
-    df = pd.DataFrame(rows, columns=["ชื่อ", "ตำแหน่ง", "เบอร์โทรศัพท์", "ที่ทำงาน"])
-    return df
+    # สร้าง DataFrame จากข้อมูลที่ได้
+    df = pd.DataFrame(rows)
 
-# ฟังก์ชันเพื่อเน้นแถวที่ตรงกับคำค้นหา
-def highlight_search_results(row, search_term):
-    return ['background-color: yellow' if search_term.lower() in str(val).lower() else '' for val in row]
-
-# สร้าง UI ด้วย Streamlit
-st.title("เบอร์โทรศัพท์ข้าราชตำรวจและข้าราชการอื่นๆ")
-st.write("แสดงข้อมูลจากฐานข้อมูล Notion พร้อมฟังก์ชันการค้นหา")
-
-# ดึงข้อมูลจาก Notion API
-data = fetch_notion_data()
-
-# ถ้ามีข้อมูล
-if data:
-    df = convert_to_dataframe(data)
-
-    # เพิ่มช่องค้นหาในตาราง
+    # ช่องค้นหาที่จะใช้กรองข้อมูล
     search_term = st.text_input("ค้นหาข้อมูล (ชื่อ, ตำแหน่ง, เบอร์โทรศัพท์, หรือที่ทำงาน)")
 
     if search_term:
-        # ฟิลเตอร์แถวที่มีคำค้นหาในคอลัมน์ต่างๆ
-        df_filtered = df[df.apply(lambda row: row.astype(str).str.contains(search_term, case=False).any(), axis=1)]
-        st.write(f"พบผลลัพธ์ {len(df_filtered)} รายการจากการค้นหาคำว่า '{search_term}'")
-
-        # ใช้ฟังก์ชัน highlight เพื่อเน้นแถวที่ตรงกับคำค้นหา
-        st.dataframe(df_filtered.style.apply(lambda row: highlight_search_results(row, search_term), axis=1))
-
+        # กรองข้อมูลตามคำค้น
+        filtered_df = df[df.apply(lambda row: row.astype(str).str.contains(search_term, case=False).any(), axis=1)]
     else:
-        # ถ้าไม่มีการค้นหา ให้แสดงตารางทั้งหมด
-        st.write("ผลลัพธ์ทั้งหมด:")
-        st.dataframe(df)
+        # ถ้าไม่มีคำค้น ให้แสดงข้อมูลทั้งหมด
+        filtered_df = df
+
+    # แปลงเบอร์โทรให้เป็นลิงก์
+    if 'เบอร์โทรศัพท์' in filtered_df.columns:
+        filtered_df['เบอร์โทรศัพท์'] = filtered_df['เบอร์โทรศัพท์'].apply(lambda x: f'<a href="tel:{x}">{x}</a>' if pd.notnull(x) else '')
+
+    # ใช้ st.markdown เพื่อแสดง DataFrame ที่ปรับแต่ง
+    st.markdown("""
+        <style>
+        .stDataFrame td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        .stDataFrame th {
+            background-color: #f0f0f0;
+            text-align: center;
+            font-weight: bold;
+            padding: 10px;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown(filtered_df.to_html(escape=False), unsafe_allow_html=True)
 
 else:
-    st.write("ไม่พบข้อมูลจากฐานข้อมูล Notion")
+    st.error(f"Error: {response.status_code} - {response.text}")

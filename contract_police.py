@@ -73,9 +73,38 @@ st.set_page_config(
     initial_sidebar_state="collapsed"  # ซ่อน Sidebar สำหรับมือถือ
 )
 
+# เพิ่ม CSS ปรับขนาดเนื้อหาทั้งหมดให้เล็กลง
+st.markdown(
+    """
+    <style>
+        body {
+            font-size: 14px;  /* ขนาดตัวอักษร */
+            line-height: 1.4;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-size: 18px;
+        }
+
+        .stButton>button {
+            font-size: 12px;
+            padding: 8px 16px;
+        }
+
+        .dataframe {
+            font-size: 12px;
+        }
+
+        .stTextInput>div>input {
+            font-size: 12px;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 # สร้าง UI ด้วย Streamlit
-st.title("📚 เบอร์โทรสัพท์")
+st.title("📚 เบอร์โทรศัพท์")
 st.markdown("""
     ท่านสามารถค้นหาได้จาก ชื่อ, ตำแหน่ง, เบอร์โทรศัพท์ หรือที่ทำงาน
 """)

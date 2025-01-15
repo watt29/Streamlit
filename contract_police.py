@@ -53,6 +53,11 @@ def convert_to_dataframe(data):
             position = result['properties']['ตำแหน่ง']['rich_text'][0]['text']['content']
             phone = result['properties'].get('เบอร์โทรศัพท์', {}).get('phone_number', 'ไม่มีข้อมูลเบอร์โทรศัพท์')
             workplace = result['properties'].get('ที่ทำงาน', {}).get('rich_text', [{}])[0].get('text', {}).get('content', 'ไม่มีข้อมูลที่ทำงาน')
+
+            # สร้างลิงก์โทรศัพท์ในกรณีที่มีเบอร์โทรศัพท์
+            if phone != 'ไม่มีข้อมูลเบอร์โทรศัพท์':
+                phone = f"[{phone}](tel:{phone})"
+            
             rows.append([name, position, phone, workplace])
         except KeyError as e:
             st.warning(f"ข้อมูลบางอย่างขาดหายไป: {e}")

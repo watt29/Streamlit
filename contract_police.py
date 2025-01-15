@@ -67,11 +67,12 @@ def highlight_search_results(row, search_term):
 
 # ปรับแต่งธีม Streamlit
 st.set_page_config(
-    page_title=" Database",
+    page_title="Database",
     page_icon="📊",
-    layout="wide",  # ใช้ layout แบบกว้างสำหรับหน้าจอใหญ่
+    layout="centered",  # ใช้ layout แบบจัดกลางหน้าจอ
     initial_sidebar_state="collapsed"  # ซ่อน Sidebar สำหรับมือถือ
 )
+
 
 # สร้าง UI ด้วย Streamlit
 st.title("📚 เบอร์โทรสัพท์")

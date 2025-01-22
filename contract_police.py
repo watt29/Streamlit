@@ -65,7 +65,7 @@ def convert_to_dataframe(data):
 def highlight_search_results(row, search_term):
     return ['background-color: #ffeb3b' if search_term.lower() in str(val).lower() else '' for val in row]
 
-# ปรับแต่งธีม Streamlit สำหรับมือถือ
+# ปรับแต่งธีม Streamlit สำหรับมือถือและข้อมูล
 st.markdown(
     """
     <style>
@@ -73,64 +73,83 @@ st.markdown(
         body {
             font-size: 14px;  
             line-height: 1.6;
-            background-color: #f5f5f5;
+            background-color: #eaf7ff;  /* สีพื้นหลังที่ดูเย็นตา */
             color: #333;
+            font-family: 'Arial', sans-serif;
         }
 
         /* Header */
         h1 {
-            font-size: 26px;
+            font-size: 32px;
             color: #4CAF50;
-            font-weight: bold;
+            font-weight: 600;
             text-align: center;
+            padding: 20px 0;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
         }
 
         h2 {
-            font-size: 18px;
-            color: #555;
-            margin-bottom: 20px;
+            font-size: 22px;
+            color: #444;
+            margin-bottom: 30px;
+            text-align: center;
         }
 
         /* Button */
         .stButton>button {
-            font-size: 14px;
-            padding: 10px 20px;
+            font-size: 16px;
+            padding: 12px 30px;
             background-color: #4CAF50;
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s, box-shadow 0.3s;
         }
 
         .stButton>button:hover {
             background-color: #45a049;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
         }
 
         /* Input Fields */
         .stTextInput>div>input {
-            font-size: 14px;
+            font-size: 16px;
             padding: 12px;
-            border-radius: 6px;
+            border-radius: 8px;
             border: 1px solid #ccc;
             background-color: #fff;
+            margin-bottom: 20px;
+            transition: border 0.3s;
+        }
+
+        .stTextInput>div>input:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
         }
 
         /* DataTable Styling */
         .stDataFrame {
-            border-radius: 6px;
+            border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             overflow-x: auto;
-        }
-
-        /* Table Styling */
-        .dataframe {
             font-size: 14px;
-            color: #333;
+            margin-top: 20px;
         }
 
         .stDataFrame th {
             background-color: #4CAF50;
             color: white;
+            font-weight: 600;
+            padding: 15px;
+        }
+
+        .stDataFrame td {
+            font-size: 14px;
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
         }
 
         .stDataFrame tr:hover {
@@ -140,16 +159,18 @@ st.markdown(
         .stTextInput {
             width: 100%;
         }
+
+        /* Customizing the "เบอร์โทรศัพท์" Column */
+        .stDataFrame td:nth-child(2) {
+            font-size: 13px;
+            color: #4CAF50;
+        }
     </style>
     """,
     unsafe_allow_html=True
 )
 
 # สร้าง UI ด้วย Streamlit
-st.title("📚 เบอร์โทรศัพท์")
-st.markdown("""
-    ท่านสามารถค้นหาได้จาก ชื่อ, ตำแหน่ง, เบอร์โทรศัพท์ หรือที่ทำงาน
-""")
 st.markdown("---")
 
 # ดึงข้อมูลจาก Notion API
@@ -160,7 +181,7 @@ if data:
     df = convert_to_dataframe(data)
 
     # เพิ่มช่องค้นหาข้อมูล
-    search_term = st.text_input("🔍 ค้นหาข้อมูล (ชื่อ, เบอร์โทรศัพท์, ตำแหน่ง, หรือที่ทำงาน)")
+    search_term = st.text_input("🔍 ค้นหาข้อมูล (ชื่อ, เบอร์โทรศัพท์, ตำแหน่ง, หรือที่ทำงาน)", "")
 
     if search_term:
         # ฟิลเตอร์แถวที่มีคำค้นหาในคอลัมน์ต่างๆ
@@ -177,9 +198,3 @@ if data:
 
 else:
     st.write("ไม่พบข้อมูลจากฐานข้อมูล Notion")
-
-# เพิ่มคำแนะนำ/ข้อความเพิ่มเติมสำหรับมือถือ
-st.markdown("""
-    - 📱 แอปนี้เหมาะสำหรับการดูข้อมูลบนอุปกรณ์มือถือ
-    - 💡 ท่านสามารถค้นหาข้อมูลได้จากคำหลักที่เกี่ยวข้อง
-""")
